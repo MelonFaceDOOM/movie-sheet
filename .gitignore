@@ -1,0 +1,6 @@
+credentials.json
+venv/
+.ipynb_checkpoints/
+*.ipynb
+token.pickle
+sheetapi-269619-39d07591cb19.json
