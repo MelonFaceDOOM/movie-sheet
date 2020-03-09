@@ -19,14 +19,53 @@ class MovieSheet(commands.Cog):
         return nick
     
     @commands.command()
+    def add(self, ctx, movie, chooser=None):    
+        if chooser is None:
+            chooser = self.get_nick()
+        try:
+            movie_sheet.add_future_movie(movie, chooser):
+        except ValueError as e:
+            return await ctx.send(e)
+        return await ctx.send(f"{movie} has been suggested by {chooser}")
+        
+    @commands.command()
+    def remove(self, ctx, movie):
+        try:
+            movie_sheet.remove_future_movie(movie):
+        except ValueError as e:
+            return await ctx.send(e)
+        return await ctx.send(f"{movie} has been removed")
+    
+    @commands.command()
+    def watch(self, ctx, movie):
+        movie_sheet.watch_movie(movie)
+        except ValueError as e:
+            return await ctx.send(e)
+        return await ctx.send(f"{movie} has been moved to the ratings sheet")
+        
+    @commands.command()
+    def unwatch(self, ctx, movie):
+        movie_sheet.unwatch_movie(movie)
+        except ValueError as e:
+            return await ctx.send(e)
+        return await ctx.send(f"{movie} has been removed from ratings sheet")
+        
+    @commands.command()
     def rate(self, ctx, movie, rating):
         nick = self.get_nick()
         try:
             movie_sheet.rate_movie(movie, reviewer, rating)
         except ValueError as e:
             return await ctx.send(e)
-            
         return await ctx.send(f"You rated {movie} {rating}/10")
+        
+    @commands.command()
+    def find(self, ctx, movie):
+        try:
+            message = movie_sheet.find_future_movie(movie):
+        except ValueError as e:
+            return await ctx.send(e)
+        return await ctx.send("```"+message+"```")
     
     @commands.command()
     def mr(self, ctx, movie):
@@ -76,7 +115,11 @@ class MovieSheet(commands.Cog):
         message = movie_sheet.unendorsed()
         return await ctx.send(message)
         
-    
+    @commands.command()
+    def recent(self, ctx, n=10):
+        message = movie_sheet.recent_suggestions(n)
+        return await ctx.send("```"+message+"```")
+        
 bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"), description='ur fav movienight companion')
 
 @bot.event

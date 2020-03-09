@@ -11,20 +11,28 @@ def authorize():
 
     credentials = ServiceAccountCredentials.from_json_keyfile_name('sheetapi-269619-39d07591cb19.json', scope)
     gs = gspread.authorize(credentials)
-
     gsheet = gs.open("apitest")
     ws_future_movies = gsheet.worksheet("future movie")
     ws_ratings = gsheet.worksheet("ratings")
     ws_users = gsheet.worksheet("users")
+    
+authorize()
 
-def pre_authorize(func):
+
+def reup_auth(func):
     def inner(*args, **kwargs):
-        authorize()
-        returned_value = func(*args, **kwargs)
-        return returned_value
+        try:
+            returned_value = func(*args, **kwargs)
+        except APIError as e:
+            if e.args[0]['status']=='UNAUTHENTICATED':
+                authorize()
+                returned_value = func(*args, **kwargs)
+            else:
+                raise e
+        return returned_value    
     return inner
 
-@pre_authorize    
+@reup_auth   
 def get_nick(id):
     ids = ws_users.col_values(1)[1:]
     try:
@@ -35,7 +43,7 @@ def get_nick(id):
     nick = ws_users.row_values(index)[1]
     return nick
 
-@pre_authorize
+@reup_auth
 def register(id, nick):
     nicks = ws_users.col_values(2)[1:]
     if nick in nicks:
@@ -49,7 +57,6 @@ def register(id, nick):
     index = len(ws_users.get_all_values()) + 1
     ws_users.insert_row(row, index)
     
-@pre_authorize
 def find_movie(sheet, movie):
     movies = sheet.col_values(1)
     movies = [movie.lower() for movie in movies]
@@ -59,7 +66,6 @@ def find_movie(sheet, movie):
         return None
     return index
 
-@pre_authorize
 def add_movie(sheet, movie, chooser):
     if find_movie(sheet, movie):
         raise ValueError("movie already exists")
@@ -69,13 +75,37 @@ def add_movie(sheet, movie, chooser):
     sheet.insert_row(row, index)
     return index
     
-@pre_authorize    
 def delete_movie(sheet, movie):
     index = find_movie(sheet, movie)
     if index:
         sheet.delete_row(index)
+    return None
+    
+@reup_auth
+def add_future_movie(movie, chooser):
+    index = add_movie(ws_future_movies, movie, chooser)
+    return None
 
-@pre_authorize
+@reup_auth
+def remove_future_movie(movie):
+    delete_movie(ws_future_movies, movie)
+    return None
+    
+@reup_auth
+def find_future_movie(movie):
+    index = find_movie(ws_future_movies, movie)
+    if not index:
+        message = f"{movie} was not found"
+        return message
+    movie = ws_future_movies.row_values(index)[0]
+    chooser = ws_future_movies.row_values(index)[1]
+    message = f"------ {movie.upper()} - {chooser.upper()} ------\nEndorsed by:\n"
+    endorsers = find_endorsers(movie)
+    for endorser in endorsers:
+        message += f"{endorser}\n"
+    return message  
+
+@reup_auth
 def find_reviewer(reviewer):
     reviewers = ws_ratings.row_values(1)
     reviewers = [reviewer.lower() for reviewer in reviewers]
@@ -85,7 +115,7 @@ def find_reviewer(reviewer):
         return None
     return col
 
-@pre_authorize
+@reup_auth
 def add_reviewer(reviewer):
     if find_reviewer(reviewer):
         raise ValueError("reviewer already exists")
@@ -94,29 +124,40 @@ def add_reviewer(reviewer):
     ws_ratings.update_cell(1, col, reviewer)
     return col
 
-@pre_authorize
+@reup_auth
+def watch_movie(movie):
+    if find_movie(ws_ratings, movie):
+        raise ValueError(f'{movie} has already been moved to the ratings sheet')
+    index = find_movie(ws_future_movies, movie)
+    if not index:
+        raise ValueError(f'{movie} is not on the future movie sheet. You must add the movie before you can watch it')
+    chooser = ws_future_movies.row_values(index)[1]
+    ratings_index = add_movie(ws_ratings, movie, chooser)
+    ws_ratings.update_cell(ratings_index, 1, movie)
+    ws_ratings.update_cell(ratings_index, 2, chooser)
+    delete_movie(ws_future_movies, movie)
+    return ratings_index
+    
+def unwatch_movie(movie):
+    index = find_movie(ws_ratings, movie)
+    if not index:
+        raise ValueError(f'{movie} cannot be unwatched because it could not be found in the ratings sheet')        
+    delete_movie(ws_ratings, movie)
+    return None
+    
+@reup_auth
 def rate_movie(movie, reviewer, rating):
     if rating <1 or rating >10:
         raise ValueError('rating must be between 1 and 10')
-
     col = find_reviewer(reviewer)
     if not col:
         col = add_reviewer(reviewer)
-    
     ratings_index = find_movie(ws_ratings, movie)
     if not ratings_index:
-        future_movies_index = find_movie(ws_future_movies, movie)
-        if not future_movies_index:
-            raise ValueError("movie could not be found")
-        chooser = ws_future_movies.row_values(future_movies_index)[1]
-        ratings_index = add_movie(ws_ratings, movie, chooser)
-        ws_ratings.update_cell(ratings_index, 1, movie)
-        ws_ratings.update_cell(ratings_index, 2, chooser)
-        delete_movie(ws_future_movies, movie)
-    
+        ratings_index = watch_movie(movie)
     ws_ratings.update_cell(ratings_index, col, rating)
+    return None
 
-@pre_authorize    
 def average_ignore_blank(str_list):
     """Returns the average of a list of ints, floats, and strings that can be converted. Blanks and letters are ignored."""
     count = 0
@@ -132,7 +173,7 @@ def average_ignore_blank(str_list):
         return 0
     return total/count        
 
-@pre_authorize
+@reup_auth
 def average_movie_rating(movie):
     ratings_index = find_movie(ws_ratings, movie)
     if not ratings_index:
@@ -149,7 +190,7 @@ def average_movie_rating(movie):
             
     return message
 
-@pre_authorize
+@reup_auth
 def average_reviewer_rating(reviewer):
     col = find_reviewer(reviewer)
     if not col:
@@ -159,29 +200,29 @@ def average_reviewer_rating(reviewer):
     message = f"{reviewer} gives an average score of {average}"
     return message
 
-@pre_authorize
+@reup_auth
 def find_chooser_rows(chooser):
     all_ratings = ws_ratings.get_all_values()
     chooser_rows = [r for r in all_ratings if r[1].lower() == chooser.lower()]
     return chooser_rows
 
-@pre_authorize
+@reup_auth
 def average_chooser_rating(chooser):
     chooser_rows = find_chooser_rows(chooser)
     average_scores = [average_ignore_blank(r[2:]) for r in chooser_rows] 
     overall_average = average_ignore_blank(average_scores)
     return overall_average
 
-@pre_authorize
+@reup_auth
 def find_endorsers(movie):
     index = find_movie(ws_future_movies, movie)
     if not index:
-        raise ValueError("movie could not be found")
+        raise ValueError(f"cannot find endorsers because {movie} could not be found")
     movie_row = ws_future_movies.row_values(index)
-    current_endorsers = movie_row[2:]
+    current_endorsers = [e for e in movie_row[2:] if e]
     return current_endorsers
     
-@pre_authorize
+@reup_auth
 def endorse_movie(movie, endorser):
     index = find_movie(ws_future_movies, movie)
     if not index:
@@ -191,7 +232,7 @@ def endorse_movie(movie, endorser):
     if endorser not in current_endorsers:
         ws_future_movies.update_cell(index, len(movie_row)+1, endorser)
         
-@pre_authorize
+@reup_auth
 def unendorse_movie(movie, endorser):
     index = find_movie(ws_future_movies, movie)
     if not index:
@@ -207,7 +248,7 @@ def unendorse_movie(movie, endorser):
     ws_future_movies.insert_row(movie_row, index)
     return f"{endorser} has unendorsed {movie}!"
     
-# @pre_authorize
+# @reup_auth
 # def find_endorsers(movie):
     # index = find_movie(ws_future_movies, movie)
     # if not index:
@@ -221,7 +262,7 @@ def unendorse_movie(movie, endorser):
     
     # return message
 
-@pre_authorize
+@reup_auth
 def top_endorsed(n):
     """return movies with the most endorsements"""
     endorsements = ws_future_movies.get_all_values()[1:] # skip header row
@@ -232,7 +273,7 @@ def top_endorsed(n):
         message += f"{e[0]} ({e[1]}): {len(e[2:])}\n" 
     return message
     
-@pre_authorize
+@reup_auth
 def unendorsed():
     """return movies with no endorsements"""
     endorsements = ws_future_movies.get_all_values()[1:] # skip header row
@@ -242,3 +283,16 @@ def unendorsed():
     for e in endorsements:
         message += f"{e[0]} ({e[1]})\n" 
     return message
+    
+@reup_auth
+def recent_suggestions(n):
+    all_movies = ws_future_movies.get_all_values()
+    start = len(all_movies)-n
+    if start < 0:
+        start = 0
+    recent_movies = all_movies[start:]
+    message = f"------ {n} RECENT SUGGESTIONS ------\n"
+    for rm in recent_movies:
+        message += f"{rm[0]}, ({rm[1]})\n"
+    return message
+    
