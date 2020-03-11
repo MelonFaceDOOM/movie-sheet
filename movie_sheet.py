@@ -165,6 +165,7 @@ def transfer_movie(movie, new_chooser):
     
 @reup_auth
 def rate_movie(movie, reviewer, rating):
+    # TODO: allow "" to be passed as rating to erase a rating
     if rating <1 or rating >10:
         raise ValueError('rating must be between 1 and 10')
     col = find_reviewer(reviewer)
@@ -198,8 +199,8 @@ def average_movie_rating(movie):
         raise ValueError("movie could not be found")
     
     movie_row = ws_ratings.row_values(ratings_index)
-    scores = movie_row[3:]
-    reviewers = ws_ratings.row_values(1)[3:]
+    scores = movie_row[2:]
+    reviewers = ws_ratings.row_values(1)[2:]
     average = average_ignore_blank(scores)
     average = '{:02.1f}'.format(float(average))
     message = f"------ {movie.upper()} ------\nAverage Score: {average}\n"
@@ -320,7 +321,8 @@ def standings():
         n = chooser_list.count(nick)
         chooser_rows = find_chooser_rows(nick)
         average = average_ignore_blank([average_ignore_blank(r[2:]) for r in chooser_rows])
-        standings.append([nick, n, average])
+        if average == average: # ignore nan
+            standings.append([nick, n, average])
     standings.sort(key=lambda x: float(x[2]), reverse=True)
     message = f"------ OVERALL STANDINGS ------\n"
     i = 1
@@ -355,4 +357,27 @@ def chooser_suggestions(chooser):
     message = f"------ SUGGESTSIONS FROM {chooser.upper()}------\n"
     for m in movies:
         message += m + "\n"
+    return message
+    
+@reup_auth
+def pick_random_movie():
+    movies = ws_future_movies.col_values(1)[1:]
+    return random.choice(movies)
+    
+@reup_auth
+def pick_random_movie():
+    movies = ws_future_movies.col_values(1)[1:]
+    return random.choice(movies)
+
+@reup_auth
+def ratings_from_reviewer(reviewer):
+    col = find_reviewer(reviewer)
+    if not col:
+        raise ValueError("reviewer could not be found")
+    all_ratings = ws_ratings.get_all_values()[1:]
+    reviewer_ratings = [[r[0], r[col-1]] for r in all_ratings if r[col-1]]
+    message = f"------ RATINGS FROM {reviewer.upper()}------\n"
+    for r in reviewer_ratings:
+        score = '{:02.1f}'.format(float(r[1]))
+        message += f"{r[0]} - {score}"
     return message

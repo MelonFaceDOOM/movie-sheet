@@ -4,7 +4,14 @@ from discord.ext import commands
 import os
 import movie_sheet
 
-
+def chunk(message, max_length=1900)
+    chunks = []
+    while message:
+        chunks.append(message[:max_length])
+        message = message[max_length:]
+    return chunks
+    
+    
 class MovieSheet(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -78,7 +85,7 @@ class MovieSheet(commands.Cog):
         
     @commands.command()
     async def find(self, ctx, movie):
-        """Lookup suggested movies"""
+        """Find movie and return either endorsers or ratings."""
         try:
             message = movie_sheet.find_future_movie(movie)
         except ValueError:
@@ -87,15 +94,6 @@ class MovieSheet(commands.Cog):
             except ValueError:
                 return await ctx.send(f"{movie} was not found")
         return await ctx.send("```"+message+"```")
-    
-    @commands.command()
-    async def mr(self, ctx, movie):
-        """Return ratings for a movie."""
-        try:
-            rating_summary = movie_sheet.average_movie_rating(movie)
-        except ValueError as e:
-            return await ctx.send(e)
-        return await ctx.send("```"+rating_summary+"```")
 
     @commands.command()
     async def rr(self, ctx, reviewer=None):
@@ -107,11 +105,11 @@ class MovieSheet(commands.Cog):
             except ValueError as e:
                 return await ctx.send(e)
         try:
-            rating_summary = movie_sheet.average_reviewer_rating(reviewer)
+            message = movie_sheet.average_reviewer_rating(reviewer)
         except ValueError as e:
             return await ctx.send(e)
         
-        return await ctx.send("```"+rating_summary+"```")
+        return await ctx.send("```"+message+"```")
         
     @commands.command()
     async def cr(self, ctx, chooser=None):
