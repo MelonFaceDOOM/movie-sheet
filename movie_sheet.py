@@ -169,8 +169,9 @@ def transfer_movie(movie, new_chooser):
     
 @reup_auth
 def rate_movie(movie, reviewer, rating):
-    # TODO: allow "" to be passed as rating to erase a rating
-    if rating <1 or rating >10:
+    if rating == "":
+        pass
+    elif rating <1 or rating >10:
         raise ValueError('rating must be between 1 and 10')
     col = find_reviewer(reviewer)
     if not col:
