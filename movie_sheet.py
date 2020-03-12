@@ -1,6 +1,7 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from gspread.exceptions import APIError
+import random
 
 def authorize():
     global ws_future_movies
@@ -39,7 +40,7 @@ def get_nick(id):
     try:
         index = ids.index(id) + 2
     except:
-        raise ValueError('id not found. try registering')
+        raise ValueError('Your discord id was not found. try using !register <nick>')
     
     nick = ws_users.row_values(index)[1]
     return nick
@@ -84,8 +85,9 @@ def add_movie(sheet, movie, chooser):
     
 def delete_movie(sheet, movie):
     index = find_movie(sheet, movie)
-    if index:
-        sheet.delete_row(index)
+    if not index:
+        raise ValueError(f'Could not delete "{movie}" because it could not be found.')
+    sheet.delete_row(index)
     return None
     
 @reup_auth
@@ -102,7 +104,7 @@ def remove_future_movie(movie):
 def find_future_movie(movie):
     index = find_movie(ws_future_movies, movie)
     if not index:
-        raise ValueError('movie was not found')
+        raise ValueError(f'The movie "{movie}" could not be found')
     movie = ws_future_movies.row_values(index)[0]
     chooser = ws_future_movies.row_values(index)[1]
     message = f"------ {movie.upper()} - {chooser.upper()} ------\nEndorsed by:\n"
@@ -132,7 +134,7 @@ def add_reviewer(reviewer):
 @reup_auth
 def watch_movie(movie):
     if find_movie(ws_ratings, movie):
-        raise ValueError(f'{movie} has already been moved to the ratings sheet')
+        raise ValueError(f'{movie} has already been moved to the ratings sheet.')
     index = find_movie(ws_future_movies, movie)
     if not index:
         raise ValueError(f'{movie} is not on the future movie sheet. You must add the movie before you can watch it')
@@ -147,7 +149,7 @@ def watch_movie(movie):
 def unwatch_movie(movie):
     index = find_movie(ws_ratings, movie)
     if not index:
-        raise ValueError(f'{movie} cannot be unwatched because it could not be found in the ratings sheet')        
+        raise ValueError(f'"{movie}" cannot be unwatched because it could not be found in the ratings sheet.')        
     delete_movie(ws_ratings, movie)
     return None
     
@@ -161,7 +163,7 @@ def transfer_movie(movie, new_chooser):
     if index:
         ws_ratings.update_cell(index, 2, new_chooser)
         return None
-    raise ValueError(f"{movie} was not found")
+    raise ValueError(f'Could not transfer choosership because "{movie}" was not found.')
     
 @reup_auth
 def rate_movie(movie, reviewer, rating):
@@ -196,7 +198,7 @@ def average_ignore_blank(str_list):
 def average_movie_rating(movie):
     ratings_index = find_movie(ws_ratings, movie)
     if not ratings_index:
-        raise ValueError("movie could not be found")
+        raise ValueError(f'Could not find rating because "{movie}" was not found.')
     
     movie_row = ws_ratings.row_values(ratings_index)
     scores = movie_row[2:]
@@ -214,11 +216,11 @@ def average_movie_rating(movie):
 def average_reviewer_rating(reviewer):
     col = find_reviewer(reviewer)
     if not col:
-        raise ValueError("reviewer could not be found")
+        raise ValueError(f'Could not find ratings because reviewer "{reviewer}" could not be found.')
     scores = ws_ratings.col_values(col)[1:]
     average = average_ignore_blank(scores)
     average = '{:02.1f}'.format(float(average))
-    message = f"{reviewer} gives an average score of {average}"
+    message = f"{reviewer} gives an average score of {average}."
     return message
 
 @reup_auth
@@ -240,7 +242,7 @@ def average_chooser_rating(chooser):
 def find_endorsers(movie):
     index = find_movie(ws_future_movies, movie)
     if not index:
-        raise ValueError(f"cannot find endorsers because {movie} could not be found")
+        raise ValueError(f'Cannot find endorsers because "{movie}" could not be found.')
     movie_row = ws_future_movies.row_values(index)
     current_endorsers = [e for e in movie_row[2:] if e]
     return current_endorsers
@@ -249,11 +251,11 @@ def find_endorsers(movie):
 def endorse_movie(movie, endorser):
     index = find_movie(ws_future_movies, movie)
     if not index:
-        raise ValueError(f"{movie} could not be found")
+        raise ValueError(f'Cannot endorse because "{movie}" could not be found.')
     movie_row = ws_future_movies.row_values(index)
     chooser = movie_row[1]
     if endorser == chooser:
-        raise ValueError(f"{endorser} cannot endorse {movie} because it is their movie")
+        raise ValueError(f'{endorser} cannot endorse "{movie}" because it is their movie.')
     current_endorsers = movie_row[2:]
     if endorser not in current_endorsers:
         ws_future_movies.update_cell(index, len(movie_row)+1, endorser)
@@ -263,13 +265,13 @@ def endorse_movie(movie, endorser):
 def unendorse_movie(movie, endorser):
     index = find_movie(ws_future_movies, movie)
     if not index:
-        raise ValueError("movie could not be found")
+        raise ValueError(f'Cannot unendorse because "{movie}" could not be found.')
         
     movie_row = ws_future_movies.row_values(index)
     try:
         movie_row.remove(endorser)
     except ValueError:
-        return f"{endorser} cannot unendorse {movie} because {endorser} has not endorsed {movie}"
+        return f'{endorser} cannot unendorse "{movie}" because {endorser} has not endorsed {movie}.'
     
     delete_movie(ws_future_movies, movie)
     ws_future_movies.insert_row(movie_row, index)
@@ -354,15 +356,12 @@ def top_ratings(n):
 def chooser_suggestions(chooser):
     all_movies = ws_future_movies.get_all_values()
     movies = [r[0] for r in all_movies if r[1].lower() == chooser.lower()]
+    if not movies:
+        raise ValueError(f'No suggestions found for {chooser}')
     message = f"------ SUGGESTSIONS FROM {chooser.upper()}------\n"
     for m in movies:
         message += m + "\n"
     return message
-    
-@reup_auth
-def pick_random_movie():
-    movies = ws_future_movies.col_values(1)[1:]
-    return random.choice(movies)
     
 @reup_auth
 def pick_random_movie():
@@ -373,11 +372,24 @@ def pick_random_movie():
 def ratings_from_reviewer(reviewer):
     col = find_reviewer(reviewer)
     if not col:
-        raise ValueError("reviewer could not be found")
+        raise ValueError(f'The reviewer "{reviewer}" could not be found.')
     all_ratings = ws_ratings.get_all_values()[1:]
     reviewer_ratings = [[r[0], r[col-1]] for r in all_ratings if r[col-1]]
+    reviewer_ratings.sort(key=lambda x: float(x[1]), reverse=True)
     message = f"------ RATINGS FROM {reviewer.upper()}------\n"
     for r in reviewer_ratings:
         score = '{:02.1f}'.format(float(r[1]))
-        message += f"{r[0]} - {score}"
+        message += f"{r[0]} - {score}\n"
+    return message
+    
+@reup_auth
+def missing_ratings_for_reviewer(reviewer):
+    col = find_reviewer(reviewer)
+    if not col:
+        raise ValueError(f'The reviewer "{reviewer}" could not be found.')
+    all_ratings = ws_ratings.get_all_values()[1:]
+    reviewer_ratings = [r[0] for r in all_ratings if not r[col-1]]
+    message = f"------ UNRATED MOVIES FOR {reviewer.upper()}------\n"
+    for r in reviewer_ratings:
+        message += f"{r}\n"
     return message

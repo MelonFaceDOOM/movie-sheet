@@ -4,7 +4,7 @@ from discord.ext import commands
 import os
 import movie_sheet
 
-def chunk(message, max_length=1900)
+def chunk(message, max_length=1900):
     chunks = []
     while message:
         chunks.append(message[:max_length])
@@ -92,7 +92,7 @@ class MovieSheet(commands.Cog):
             try:
                 message = movie_sheet.average_movie_rating(movie)
             except ValueError:
-                return await ctx.send(f"{movie} was not found")
+                return await ctx.send(f'Could not find "{movie}".')
         return await ctx.send("```"+message+"```")
 
     @commands.command()
@@ -193,7 +193,34 @@ class MovieSheet(commands.Cog):
     @commands.command()
     async def suggestions(self, ctx, chooser):
         """Return all movies suggested by a chooser."""
-        message = movie_sheet.chooser_suggestions(chooser)
+        try:
+            message = movie_sheet.chooser_suggestions(chooser)
+        except ValueError as e:
+            return await ctx.send(e)
+        return await ctx.send("```"+message+"```")
+        
+    @commands.command()
+    async def random(self, ctx):
+        """Return a random suggested movie."""
+        movie = movie_sheet.pick_random_movie()
+        return await ctx.send("```"+movie+"```")
+        
+    @commands.command()
+    async def ratings_from(self, ctx, reviewer):
+        """return ratings from a reviewer"""
+        try:
+            message = movie_sheet.ratings_from_reviewer(reviewer)
+        except ValueError as e:
+            return await ctx.send(e)
+        return await ctx.send("```"+message+"```")
+    
+    @commands.command()
+    async def unrated_by(self, ctx, reviewer):
+        """return unrated movies from a reviewer"""
+        try:
+            message = movie_sheet.missing_ratings_for_reviewer(reviewer)
+        except ValueError as e:
+            return await ctx.send(e)
         return await ctx.send("```"+message+"```")
         
 bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"), description='ur fav movienight companion')
