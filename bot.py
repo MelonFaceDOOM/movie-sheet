@@ -66,12 +66,9 @@ class MovieSheet(commands.Cog):
         """Find movie that has been suggested or watched."""
         movie = " ".join(movie)
         try:
-            message = movie_sheet.find_future_movie(movie)
+            message = movie_sheet.find_all_movies(movie)
         except ValueError:
-            try:
-                message = movie_sheet.average_movie_rating(movie)
-            except ValueError:
-                return await ctx.send(f'Could not find "{movie}".')
+            return await ctx.send(f'Could not find "{movie}".')
         return await ctx.send("```"+message+"```")
 
     @commands.command()
