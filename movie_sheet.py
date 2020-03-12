@@ -2,6 +2,7 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from gspread.exceptions import APIError
 import random
+from matching import find_closest_match
 
 def authorize():
     global ws_future_movies
@@ -67,8 +68,9 @@ def register(id, nick):
 def find_movie(sheet, movie):
     movies = sheet.col_values(1)[1:]
     movies = [movie.lower() for movie in movies]
+    best_match = find_closest_match(movie, movies)
     try:
-        index = movies.index(movie.lower()) + 2
+        index = movies.index(best_match.lower()) + 2
     except ValueError:
         return None
     return index
