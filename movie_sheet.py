@@ -3,7 +3,14 @@ from oauth2client.service_account import ServiceAccountCredentials
 from gspread.exceptions import APIError
 import random
 from matching import find_closest_match
+# TODO:
+# strip movies when they are added
 
+
+# test the following changes:
+# make endorse change input to lowercase before looking update
+# add space to the right of rating in chooser message
+# add space to the right of username in ratings message
 
 HEADER_ROWS_FUTURE = 1
 INFO_COLUMNS_FUTURE = 2
@@ -78,7 +85,7 @@ def find_exact_movie(sheet, movie):
     movies = sheet.col_values(MOVIE_COL_FUTURE)[HEADER_ROWS_FUTURE:]
     movies = [movie.lower() for movie in movies]
     try:
-        index = movies.index(movie) + HEADER_ROWS_FUTURE + 1
+        index = movies.index(movie.lower()) + HEADER_ROWS_FUTURE + 1
     except ValueError:
         return None
     return index
@@ -372,7 +379,7 @@ def ratings_from_chooser(chooser):
     average_scores.sort(key=lambda x: float(x[1]), reverse=True)
     overall_average = average_ignore_blank([score[1] for score in average_scores])
     overall_average = '{:02.1f}'.format(float(overall_average))
-    message = f'------ SUBMISSIONS FROM {chooser.upper()} ({overall_average})------\n'
+    message = f'------ SUBMISSIONS FROM {chooser.upper()} ({overall_average}) ------\n'
     for score in average_scores:
         average = '{:02.1f}'.format(float(score[1]))
         message += f'{score[0]} - {average}\n'
@@ -386,7 +393,7 @@ def ratings_from_reviewer(reviewer):
     all_ratings = ws_ratings.get_all_values()[HEADER_ROWS_RATINGS:]
     reviewer_ratings = [[r[MOVIE_COL_RATINGS-1], r[col-1]] for r in all_ratings if r[col-1]]
     reviewer_ratings.sort(key=lambda x: float(x[1]), reverse=True)
-    message = f"------ RATINGS FROM {reviewer.upper()}------\n"
+    message = f"------ RATINGS FROM {reviewer.upper()} ------\n"
     for r in reviewer_ratings:
         score = '{:02.1f}'.format(float(r[1]))
         message += f"{r[0]} - {score}\n"

@@ -1,8 +1,8 @@
-credentials.json
 venv/
 .ipynb_checkpoints/
 __pycache__/
 *.ipynb
-token.pickle
 sheetapi-269619-39d07591cb19.json
 config.py
+gapikey
+gcsekey

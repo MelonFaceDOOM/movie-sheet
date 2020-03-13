@@ -1,8 +1,11 @@
 from config import bot_token
+import movie_sheet
+from scraping.ebert import ebert_lookup
+from scraping.rotten_tomatoes import random_tomato
 import discord
 from discord.ext import commands
 import os
-import movie_sheet
+
 
 def chunk(message, max_length=1900):
     chunks = []
@@ -234,6 +237,24 @@ class MovieSheet(commands.Cog):
         """Return a random suggested movie."""
         movie = movie_sheet.pick_random_movie()
         return await ctx.send("```"+movie+"```")
+
+    @commands.command()
+    async def ebert(self, ctx, movie):
+        """Returns a Rogert Ebert review for a given movie."""
+        message = ebert_lookup(movie):
+        return await ctx.send("```"+message+"```")
+ 
+    @commands.command()
+    async def fresh(self, ctx, movie):
+        """Returns a random fresh RT review for a given movie."""
+        message = random_tomato(movie, fresh=1):
+        return await ctx.send("```"+message+"```")
+        
+    @commands.command()
+    async def rotten(self, ctx, movie):
+        """Returns a random rotten RT review for a given movie."""
+        message = random_tomato(movie, fresh=0):
+        return await ctx.send("```"+message+"```")
         
 bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"), description='ur fav movienight companion')
 
