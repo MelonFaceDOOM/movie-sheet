@@ -10,7 +10,7 @@ INFO_COLUMNS_FUTURE = 2
 MOVIE_COL_FUTURE = 1
 CHOOSER_COL_FUTURE = 2
 HEADER_ROWS_RATINGS = 1
-INFO_COLUMNS_FUTURE = 2
+INFO_COLUMNS_RATINGS = 2
 MOVIE_COL_RATINGS = 1
 CHOOSER_COL_RATINGS = 2
 ID_COL_USERS = 1
@@ -94,10 +94,10 @@ def find_movie(sheet, movie):
     return index
    
 def find_reviewer(reviewer):
-    reviewers = ws_ratings.row_values(HEADER_ROWS_RATINGS)[INFO_COLUMNS_FUTURE:]
+    reviewers = ws_ratings.row_values(HEADER_ROWS_RATINGS)[INFO_COLUMNS_RATINGS:]
     reviewers = [reviewer.lower() for reviewer in reviewers]
     try:
-        col = reviewers.index(reviewer.lower()) + INFO_COLUMNS_FUTURE + 1
+        col = reviewers.index(reviewer.lower()) + INFO_COLUMNS_RATINGS + 1
     except ValueError:
         return None
     return col
@@ -215,8 +215,8 @@ def find_all_movies(movie):
     if best_match in ratings_movies:
         index = ratings_movies.index(best_match.lower()) + HEADER_ROWS_RATINGS + 1
         movie_row = ws_ratings.row_values(index)
-        scores = movie_row[INFO_COLUMNS_FUTURE:]
-        reviewers = ws_ratings.row_values(HEADER_ROWS_RATINGS)[INFO_COLUMNS_FUTURE:]
+        scores = movie_row[INFO_COLUMNS_RATINGS:]
+        reviewers = ws_ratings.row_values(HEADER_ROWS_RATINGS)[INFO_COLUMNS_RATINGS:]
         average = average_ignore_blank(scores)
         average = '{:02.1f}'.format(float(average))
         message = f"------ {best_match.upper()} ------\nAverage Score: {average}\n"
@@ -352,13 +352,30 @@ def average_reviewer_rating(reviewer):
     message = f"{reviewer} gives an average score of {average}."
     return message
 
+# TODO: DELETE
+# @reup_auth
+# def average_chooser_rating(chooser):
+    # chooser_rows = find_chooser_rows(chooser)
+    #  
+    # average = average_ignore_blank(average_scores)
+    # average = '{:02.1f}'.format(float(average))
+    # message = f"{chooser} receives an average score of {average}"
+    # return message
+
 @reup_auth
-def average_chooser_rating(chooser):
+def ratings_from_chooser(chooser):
     chooser_rows = find_chooser_rows(chooser)
-    average_scores = [average_ignore_blank(r[INFO_COLUMNS_FUTURE:]) for r in chooser_rows] 
-    average = average_ignore_blank(average_scores)
-    average = '{:02.1f}'.format(float(average))
-    message = f"{chooser} receives an average score of {average}"
+    if not chooser_rows:
+        raise ValueError(f'Chooser {chooser} not found.')
+        
+    average_scores = [[r[MOVIE_COL_RATINGS-1], average_ignore_blank(r[INFO_COLUMNS_RATINGS:])] for r in chooser_rows]
+    average_scores.sort(key=lambda x: float(x[1]), reverse=True)
+    overall_average = average_ignore_blank([score[1] for score in average_scores])
+    overall_average = '{:02.1f}'.format(float(overall_average))
+    message = f'------ SUBMISSIONS FROM {chooser.upper()} ({overall_average})------\n'
+    for score in average_scores:
+        average = '{:02.1f}'.format(float(score[1]))
+        message += f'{score[0]} - {average}\n'
     return message
 
 @reup_auth

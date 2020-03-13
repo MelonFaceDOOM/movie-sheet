@@ -192,7 +192,7 @@ class MovieSheet(commands.Cog):
             except ValueError as e:
                 return await ctx.send(e)
         try:
-            rating_summary = movie_sheet.average_chooser_rating(nick)
+            rating_summary = movie_sheet.ratings_from_chooser(nick)
         except ValueError as e:
             return await ctx.send(e)
         return await ctx.send("```"+rating_summary+"```")
