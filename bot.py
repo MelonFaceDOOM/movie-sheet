@@ -239,21 +239,24 @@ class MovieSheet(commands.Cog):
         return await ctx.send("```"+movie+"```")
 
     @commands.command()
-    async def ebert(self, ctx, movie):
+    async def ebert(self, ctx, *movie):
         """Returns a Rogert Ebert review for a given movie."""
-        message = ebert_lookup(movie):
+        movie = " ".join(movie)
+        message = ebert_lookup(movie)
         return await ctx.send("```"+message+"```")
  
     @commands.command()
-    async def fresh(self, ctx, movie):
+    async def fresh(self, ctx, *movie):
         """Returns a random fresh RT review for a given movie."""
-        message = random_tomato(movie, fresh=1):
+        movie = " ".join(movie)
+        message = random_tomato(movie, fresh=1)
         return await ctx.send("```"+message+"```")
         
     @commands.command()
-    async def rotten(self, ctx, movie):
+    async def rotten(self, ctx, *movie):
         """Returns a random rotten RT review for a given movie."""
-        message = random_tomato(movie, fresh=0):
+        movie = " ".join(movie)
+        message = random_tomato(movie, fresh=0)
         return await ctx.send("```"+message+"```")
         
 bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"), description='ur fav movienight companion')

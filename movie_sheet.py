@@ -4,8 +4,7 @@ from gspread.exceptions import APIError
 import random
 from matching import find_closest_match
 # TODO:
-# strip movies when they are added
-
+# fix leading/trailing whitespace on endorse, probably on other functions. need to think.
 
 # test the following changes:
 # make endorse change input to lowercase before looking update
