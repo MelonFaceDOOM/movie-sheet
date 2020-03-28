@@ -15,13 +15,13 @@ def chunk(message, max_length=1900):
     return chunks
     
     
-class MovieSheet(commands.Cog):
+class Core(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command()
     async def register(self, ctx, *nick):
-        """Register your discord id with a nickname in the googlesheet."""
+        """Register your discord id with a nickname."""
         nick = " ".join(nick)
         id = str(ctx.message.author.id)
         try:
@@ -57,7 +57,9 @@ class MovieSheet(commands.Cog):
             
     @commands.command()
     async def transfer(self, ctx, movie, nick):
-        """Transfer choosership to a new person."""
+        """Transfer choosership to a new person.
+        Requires quotations around movie and nick if they contain spaces.
+        """
         try:
             movie_sheet.transfer_movie(movie, nick)
         except ValueError as e:
@@ -70,8 +72,8 @@ class MovieSheet(commands.Cog):
         movie = " ".join(movie)
         try:
             message = movie_sheet.find_all_movies(movie)
-        except ValueError:
-            return await ctx.send(f'Could not find "{movie}".')
+        except ValueError as e:
+            return await ctx.send(e)
         return await ctx.send("```"+message+"```")
 
     @commands.command()
@@ -100,35 +102,51 @@ class MovieSheet(commands.Cog):
             return await ctx.send(e)
         message = movie_sheet.unendorse_movie(movie, nick)
         return await ctx.send(message)
-        
+    
     @commands.command()
-    async def rate(self, ctx, rating, *movie):
+    async def unrate(self, ctx, *movie):
         """Rate a movie."""
-        movie = " ".join(movie)
         id = str(ctx.message.author.id)
         try:
             nick = movie_sheet.get_nick(id)
         except ValueError as e:
             return await ctx.send(e)
+        movie = " ".join(movie)
+        try:
+            movie_sheet.rate_movie(movie, nick, rating="")
+        except ValueError as e:
+            return await ctx.send(e)
+        return await ctx.send(f"You have removed your rating from {movie}")
+        
+    @commands.command()
+    async def rate(self, ctx, *movie_and_rating):
+        """Rate a movie."""
+        id = str(ctx.message.author.id)
+        try:
+            nick = movie_sheet.get_nick(id)
+        except ValueError as e:
+            return await ctx.send(e)
+        rating = movie_and_rating[-1]
         cutoff = str(rating).find("/10")
         if cutoff > -1:
             rating = str(rating)[:cutoff]
-        rating = float(rating)
+        movie = " ".join(movie_and_rating[:-1])
         try:
             movie_sheet.rate_movie(movie, nick, rating)
         except ValueError as e:
             return await ctx.send(e)
         return await ctx.send(f"You rated {movie} {rating}/10")
-        
-    @commands.command()
-    async def watch(self, ctx, *movie):
-        """Move a movie from the suggestions sheet to the ratings sheet."""
-        movie = " ".join(movie)
-        try:
-            movie_sheet.watch_movie(movie)
-        except ValueError as e:
-            return await ctx.send(e)
-        return await ctx.send(f"{movie} has been moved to the ratings sheet")
+       
+#TODO: DELETE. Made superfluous by rate()
+    # @commands.command()
+    # async def watch(self, ctx, *movie):
+        # """Move a movie from the suggestions sheet to the ratings sheet."""
+        # movie = " ".join(movie)
+        # try:
+            # movie_sheet.watch_movie(movie)
+        # except ValueError as e:
+            # return await ctx.send(e)
+        # return await ctx.send(f"{movie} has been moved to the ratings sheet")
         
     @commands.command()
     async def unwatch(self, ctx, *movie):
@@ -140,16 +158,58 @@ class MovieSheet(commands.Cog):
             return await ctx.send(e)
         return await ctx.send(f"{movie} has been removed from ratings sheet")
         
+class IndividualAnalytics(commands.Cog):
     @commands.command()
     async def suggestions(self, ctx, *nick):
         """Return all movies suggested by a chooser."""
         nick = " ".join(nick)
         try:
-            message = movie_sheet.chooser_suggestions(nick)
+            messages = chunk(movie_sheet.chooser_suggestions(nick))
         except ValueError as e:
             return await ctx.send(e)
-        return await ctx.send("```"+message+"```")
+        for message in messages:
+            await ctx.send("```"+message+"```")
+            
+    @commands.command()
+    async def chooser(self, ctx, *nick):
+        """Return ratings received by a chooser."""
+        nick = " ".join(nick)
+        if not nick:
+            id = str(ctx.message.author.id)
+            try:
+                nick = movie_sheet.get_nick(id)
+            except ValueError as e:
+                return await ctx.send(e)
+        try:
+            messages = chunk(movie_sheet.ratings_from_chooser(nick))
+        except ValueError as e:
+            return await ctx.send(e)
+        for message in messages:
+            await ctx.send("```"+message+"```")
+        
+    @commands.command()
+    async def ratings(self, ctx, *nick):
+        """Return ratings from a reviewer."""
+        nick = " ".join(nick)
+        try:
+            messages = chunk(movie_sheet.ratings_from_reviewer(nick))
+        except ValueError as e:
+            return await ctx.send(e)
+        for message in messages:
+            await ctx.send("```"+message+"```")
+    
+    @commands.command()
+    async def unrated(self, ctx, *nick):
+        """Return unrated movies from a reviewer."""
+        nick = " ".join(nick)
+        try:
+            messages = chunk(movie_sheet.missing_ratings_for_reviewer(nick))
+        except ValueError as e:
+            return await ctx.send(e)
+        for message in messages:
+            await ctx.send("```"+message+"```")
 
+class GroupAnalytics(commands.Cog):
     @commands.command()
     async def recent(self, ctx, n=10):
         """Return most recently-suggested future movies."""
@@ -165,60 +225,27 @@ class MovieSheet(commands.Cog):
     @commands.command()
     async def unendorsed(self, ctx):
         """Return unendorsed movies."""
-        message = movie_sheet.unendorsed()
-        return await ctx.send("```"+message+"```")
+        messages = chunk(movie_sheet.unendorsed())
+        for message in messages:
+            await ctx.send("```"+message+"```")
         
-    @commands.command()
-    async def reviewer(self, ctx, *nick):
-        """Return ratings given by a reviewer."""
-        nick = " ".join(nick)
-        if not nick:
-            id = str(ctx.message.author.id)
-            try:
-                nick = movie_sheet.get_nick(id)
-            except ValueError as e:
-                return await ctx.send(e)
-        try:
-            message = movie_sheet.average_reviewer_rating(nick)
-        except ValueError as e:
-            return await ctx.send(e)
-        return await ctx.send("```"+message+"```")
-        
-    @commands.command()
-    async def chooser(self, ctx, *nick):
-        """Return ratings received by a chooser."""
-        nick = " ".join(nick)
-        if not nick:
-            id = str(ctx.message.author.id)
-            try:
-                nick = movie_sheet.get_nick(id)
-            except ValueError as e:
-                return await ctx.send(e)
-        try:
-            rating_summary = movie_sheet.ratings_from_chooser(nick)
-        except ValueError as e:
-            return await ctx.send(e)
-        return await ctx.send("```"+rating_summary+"```")
-        
-    @commands.command()
-    async def ratings(self, ctx, *nick):
-        """Return ratings from a reviewer."""
-        nick = " ".join(nick)
-        try:
-            message = movie_sheet.ratings_from_reviewer(nick)
-        except ValueError as e:
-            return await ctx.send(e)
-        return await ctx.send("```"+message+"```")
-    
-    @commands.command()
-    async def unrated(self, ctx, *nick):
-        nick = " ".join(nick)
-        """Return unrated movies from a reviewer."""
-        try:
-            message = movie_sheet.missing_ratings_for_reviewer(nick)
-        except ValueError as e:
-            return await ctx.send(e)
-        return await ctx.send("```"+message+"```")
+# TODO: DELETE. made superfluous by ratings()
+    # @commands.command()
+    # async def reviewer(self, ctx, *nick):
+        # """Return ratings given by a reviewer."""
+        # nick = " ".join(nick)
+        # if not nick:
+            # id = str(ctx.message.author.id)
+            # try:
+                # nick = movie_sheet.get_nick(id)
+            # except ValueError as e:
+                # return await ctx.send(e)
+        # try:
+            # messages = chunk(movie_sheet.average_reviewer_rating(nick))
+        # except ValueError as e:
+            # return await ctx.send(e)
+        # for message in messages:
+            # await ctx.send("```"+message+"```")
         
     @commands.command()
     async def standings(self, ctx):
@@ -231,7 +258,8 @@ class MovieSheet(commands.Cog):
         """Return the top-rated movies."""
         message = movie_sheet.top_ratings(n)
         return await ctx.send("```"+message+"```")
-        
+
+class Research(commands.Cog):
     @commands.command()
     async def random(self, ctx):
         """Return a random suggested movie."""
@@ -240,31 +268,37 @@ class MovieSheet(commands.Cog):
 
     @commands.command()
     async def ebert(self, ctx, *movie):
-        """Returns a Rogert Ebert review for a given movie."""
+        """Return a Rogert Ebert review for a movie."""
         movie = " ".join(movie)
-        message = ebert_lookup(movie)
-        return await ctx.send("```"+message+"```")
+        messages = chunk(ebert_lookup(movie))
+        for message in messages:
+            await ctx.send("```"+message+"```")
  
     @commands.command()
     async def fresh(self, ctx, *movie):
-        """Returns a random fresh RT review for a given movie."""
+        """Return a random fresh RT review for a movie."""
         movie = " ".join(movie)
-        message = random_tomato(movie, fresh=1)
-        return await ctx.send("```"+message+"```")
+        messages = chunk(random_tomato(movie, fresh=1))
+        for message in messages:
+            await ctx.send("```"+message+"```")
         
     @commands.command()
     async def rotten(self, ctx, *movie):
-        """Returns a random rotten RT review for a given movie."""
+        """Return a random rotten RT review for a movie."""
         movie = " ".join(movie)
-        message = random_tomato(movie, fresh=0)
-        return await ctx.send("```"+message+"```")
+        messages = chunk(random_tomato(movie, fresh=0))
+        for message in messages:
+            await ctx.send("```"+message+"```")
         
-bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"), description='ur fav movienight companion')
+bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"), description='ur fav movienight companion.\n!register <nick> to get started!!!')
 
 @bot.event
 async def on_ready():
     print('Logged in as {0} ({0.id})'.format(bot.user))
     print('------')
 
-bot.add_cog(MovieSheet(bot))
+bot.add_cog(Core(bot))
+bot.add_cog(IndividualAnalytics(bot))
+bot.add_cog(GroupAnalytics(bot))
+bot.add_cog(Research(bot))
 bot.run(bot_token)

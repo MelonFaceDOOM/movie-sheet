@@ -3,13 +3,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 from gspread.exceptions import APIError
 import random
 from matching import find_closest_match
-# TODO:
-# fix leading/trailing whitespace on endorse, probably on other functions. need to think.
 
-# test the following changes:
-# make endorse change input to lowercase before looking update
-# add space to the right of rating in chooser message
-# add space to the right of username in ratings message
 
 HEADER_ROWS_FUTURE = 1
 INFO_COLUMNS_FUTURE = 2
@@ -68,7 +62,6 @@ def add_movie(sheet, movie, chooser):
     if find_exact_movie(sheet, movie):
         raise ValueError("movie already exists")
     row = [movie, chooser]
-    print(row)
     index = len(sheet.get_all_values()) + 1
     sheet.insert_row(row, index)
     return index
@@ -82,9 +75,10 @@ def delete_movie(sheet, movie):
     
 def find_exact_movie(sheet, movie):
     movies = sheet.col_values(MOVIE_COL_FUTURE)[HEADER_ROWS_FUTURE:]
-    movies = [movie.lower() for movie in movies]
+    movies = [movie.lower().strip() for movie in movies]
+    movie = movie.lower().strip()
     try:
-        index = movies.index(movie.lower()) + HEADER_ROWS_FUTURE + 1
+        index = movies.index(movie) + HEADER_ROWS_FUTURE + 1
     except ValueError:
         return None
     return index
@@ -178,6 +172,8 @@ def get_nick(id):
     
 @reup_auth
 def add_future_movie(movie, chooser):
+    if find_exact_movie(ws_ratings, movie):
+        raise ValueError(f"Cannot suggest {movie} becuase it has already been watched.")
     index = add_movie(ws_future_movies, movie, chooser)
     return None
 
@@ -207,7 +203,7 @@ def find_all_movies(movie):
     best_match = find_closest_match(movie, future_movies+ratings_movies)
     
     if not best_match:
-        raise ValueError('"{movie}" was not found.')
+        raise ValueError(f'"{movie}" was not found.')
         
     if best_match in future_movies:
         index = future_movies.index(best_match.lower()) + HEADER_ROWS_FUTURE + 1
@@ -221,11 +217,12 @@ def find_all_movies(movie):
     if best_match in ratings_movies:
         index = ratings_movies.index(best_match.lower()) + HEADER_ROWS_RATINGS + 1
         movie_row = ws_ratings.row_values(index)
+        chooser = movie_row[CHOOSER_COL_RATINGS-1]
         scores = movie_row[INFO_COLUMNS_RATINGS:]
         reviewers = ws_ratings.row_values(HEADER_ROWS_RATINGS)[INFO_COLUMNS_RATINGS:]
         average = average_ignore_blank(scores)
         average = '{:02.1f}'.format(float(average))
-        message = f"------ {best_match.upper()} ------\nAverage Score: {average}\n"
+        message = f"------ {best_match.upper()} ({chooser.upper()})------\nAverage Score: {average}\n"
         for i, score in enumerate(scores):
             if score:
                 score = '{:02.1f}'.format(float(score))
@@ -268,7 +265,7 @@ def unendorse_movie(movie, endorser):
 def rate_movie(movie, reviewer, rating):
     if rating == "":
         pass
-    elif rating <1 or rating >10:
+    elif float(rating) <1 or float(rating) >10:
         raise ValueError('rating must be between 1 and 10')
     col = find_reviewer(reviewer)
     if not col:
@@ -351,28 +348,18 @@ def unendorsed():
 def average_reviewer_rating(reviewer):
     col = find_reviewer(reviewer)
     if not col:
-        raise ValueError(f'Could not find ratings because reviewer "{reviewer}" could not be found.')
+        raise ValueError(f'No ratings from {reviewer} were found.')
     scores = ws_ratings.col_values(col)[HEADER_ROWS_RATINGS:]
     average = average_ignore_blank(scores)
     average = '{:02.1f}'.format(float(average))
     message = f"{reviewer} gives an average score of {average}."
     return message
 
-# TODO: DELETE
-# @reup_auth
-# def average_chooser_rating(chooser):
-    # chooser_rows = find_chooser_rows(chooser)
-    #  
-    # average = average_ignore_blank(average_scores)
-    # average = '{:02.1f}'.format(float(average))
-    # message = f"{chooser} receives an average score of {average}"
-    # return message
-
 @reup_auth
 def ratings_from_chooser(chooser):
     chooser_rows = find_chooser_rows(chooser)
     if not chooser_rows:
-        raise ValueError(f'Chooser {chooser} not found.')
+        raise ValueError(f'No watched movies were found for the chooser, {chooser}.')
         
     average_scores = [[r[MOVIE_COL_RATINGS-1], average_ignore_blank(r[INFO_COLUMNS_RATINGS:])] for r in chooser_rows]
     average_scores.sort(key=lambda x: float(x[1]), reverse=True)
@@ -388,13 +375,15 @@ def ratings_from_chooser(chooser):
 def ratings_from_reviewer(reviewer):
     col = find_reviewer(reviewer)
     if not col:
-        raise ValueError(f'The reviewer "{reviewer}" could not be found.')
+        raise ValueError(f'No ratings from {reviewer} were found.')
     all_ratings = ws_ratings.get_all_values()[HEADER_ROWS_RATINGS:]
-    reviewer_ratings = [[r[MOVIE_COL_RATINGS-1], r[col-1]] for r in all_ratings if r[col-1]]
-    reviewer_ratings.sort(key=lambda x: float(x[1]), reverse=True)
-    message = f"------ RATINGS FROM {reviewer.upper()} ------\n"
+    reviewer_ratings = [[r[MOVIE_COL_RATINGS-1], float(r[col-1])] for r in all_ratings if r[col-1]]
+    reviewer_ratings.sort(key=lambda x: x[1], reverse=True)
+    average = average_ignore_blank([r[1] for r in reviewer_ratings])
+    average = '{:02.1f}'.format(float(average))
+    message = f"------ RATINGS FROM {reviewer.upper()} (avg: {average})------\n"
     for r in reviewer_ratings:
-        score = '{:02.1f}'.format(float(r[1]))
+        score = '{:02.1f}'.format(r[1])
         message += f"{r[0]} - {score}\n"
     return message
     
@@ -402,7 +391,7 @@ def ratings_from_reviewer(reviewer):
 def missing_ratings_for_reviewer(reviewer):
     col = find_reviewer(reviewer)
     if not col:
-        raise ValueError(f'The reviewer "{reviewer}" could not be found.')
+        raise ValueError(f'No ratings from {reviewer} were found.')
     all_ratings = ws_ratings.get_all_values()[HEADER_ROWS_RATINGS:]
     reviewer_ratings = [r[MOVIE_COL_RATINGS-1] for r in all_ratings if not r[col-1]]
     message = f"------ UNRATED MOVIES FOR {reviewer.upper()}------\n"
