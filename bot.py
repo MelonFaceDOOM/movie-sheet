@@ -228,25 +228,7 @@ class GroupAnalytics(commands.Cog):
         messages = chunk(movie_sheet.unendorsed())
         for message in messages:
             await ctx.send("```"+message+"```")
-        
-# TODO: DELETE. made superfluous by ratings()
-    # @commands.command()
-    # async def reviewer(self, ctx, *nick):
-        # """Return ratings given by a reviewer."""
-        # nick = " ".join(nick)
-        # if not nick:
-            # id = str(ctx.message.author.id)
-            # try:
-                # nick = movie_sheet.get_nick(id)
-            # except ValueError as e:
-                # return await ctx.send(e)
-        # try:
-            # messages = chunk(movie_sheet.average_reviewer_rating(nick))
-        # except ValueError as e:
-            # return await ctx.send(e)
-        # for message in messages:
-            # await ctx.send("```"+message+"```")
-        
+
     @commands.command()
     async def standings(self, ctx):
         """Return rankings of chooser average scores."""
@@ -274,21 +256,21 @@ class Research(commands.Cog):
         for message in messages:
             await ctx.send("```"+message+"```")
  
-    @commands.command()
-    async def fresh(self, ctx, *movie):
-        """Return a random fresh RT review for a movie."""
-        movie = " ".join(movie)
-        messages = chunk(random_tomato(movie, fresh=1))
-        for message in messages:
-            await ctx.send("```"+message+"```")
+    # @commands.command()
+    # async def fresh(self, ctx, *movie):
+        # """Return a random fresh RT review for a movie."""
+        # movie = " ".join(movie)
+        # messages = chunk(random_tomato(movie, fresh=1))
+        # for message in messages:
+            # await ctx.send("```"+message+"```")
         
-    @commands.command()
-    async def rotten(self, ctx, *movie):
-        """Return a random rotten RT review for a movie."""
-        movie = " ".join(movie)
-        messages = chunk(random_tomato(movie, fresh=0))
-        for message in messages:
-            await ctx.send("```"+message+"```")
+    # @commands.command()
+    # async def rotten(self, ctx, *movie):
+        # """Return a random rotten RT review for a movie."""
+        # movie = " ".join(movie)
+        # messages = chunk(random_tomato(movie, fresh=0))
+        # for message in messages:
+            # await ctx.send("```"+message+"```")
         
 bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"), description='ur fav movienight companion.\n!register <nick> to get started!!!')
 
