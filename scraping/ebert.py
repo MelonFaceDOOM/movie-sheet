@@ -7,20 +7,19 @@ def ebert_lookup(movie):
 
     page = requests.get(top_result_url)
     tree = html.fromstring(page.content)
-
-    title = tree.xpath('//h1[@itemprop="name"]')[0].text
-    author = tree.xpath('//p[@class="byline"]//span[@itemprop="name"]')[0].text
-
-    fullstars = len(tree.xpath('//p[@class="byline"]//span[@class="star-rating"]/i[@class="icon-star-full"]'))
-    halfstar = tree.xpath('//p[@class="byline"]//span[@class="star-rating"]/i[@class="icon-star-half"]')
+    
+    title = tree.xpath('//h1[@class="page-content--title"]')[0].text
+    author = tree.xpath('//div[@class="page-content--byline-share"]/div/span/a')[0].text
+    fullstars = len(tree.xpath('//div[@class="page-content--star-rating"]/span/i[@class="icon-star-full"]'))
+    halfstars = len(tree.xpath('//div[@class="page-content--star-rating"]/span/i[@class="icon-star-half"]'))
     score = str(fullstars)
 
-    if halfstar:
+    if halfstars:
         score += ".5"
 
     message = f'{title.upper()} - {score}/4\n- by {author}\n'
 
-    first_paragraph = tree.xpath('//div[@itemprop="reviewBody"]/p')[0]
+    first_paragraph = tree.xpath('//section[@class="page-content--block_editor-content js--reframe"]/p')[0]
     first_paragraph = first_paragraph.text_content()
     first_paragraph.replace("\'", "")
     message += first_paragraph

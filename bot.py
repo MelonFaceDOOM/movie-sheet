@@ -163,6 +163,12 @@ class IndividualAnalytics(commands.Cog):
     async def suggestions(self, ctx, *nick):
         """Return all movies suggested by a chooser."""
         nick = " ".join(nick)
+        if not nick:
+            id = str(ctx.message.author.id)
+            try:
+                nick = movie_sheet.get_nick(id)
+            except ValueError as e:
+                return await ctx.send(e)
         try:
             messages = chunk(movie_sheet.chooser_suggestions(nick))
         except ValueError as e:

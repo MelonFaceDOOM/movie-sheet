@@ -1,0 +1,1715 @@
+! function(e, t) {
+    function n(e) {
+        var t = {},
+            n = e.split("?")[1];
+        if ("undefined" == typeof n) return null;
+        for (var i = n.split("&"), o = 0; o < i.length; o++) {
+            try {
+                var r = i[o].split("="),
+                    a = decodeURIComponent(r[0]),
+                    s = decodeURIComponent(r[1])
+            } catch (c) {
+                X.warn("Error found while parsing query params: " + c);
+                continue
+            }
+            t[a] = s
+        }
+        return t
+    }
+
+    function i(e, t) {
+        var n = new XMLHttpRequest;
+        n.open("POST", e, !0), n.setRequestHeader("Content-Type", "application/json; charset=UTF-8"), n.send(JSON.stringify(t))
+    }
+
+    function o(e, t, n) {
+        function i() {}
+
+        function o() {
+            a.parentNode && a.parentNode.removeChild(a), window[d] = i, s && clearTimeout(s)
+        }
+
+        function r() {
+            window[d] && o()
+        }
+        "function" == typeof t && (n = t, t = {}), t || (t = {});
+        var a, s, c = t.prefix || "__jp",
+            l = (new Date).getTime(),
+            d = t.name || c + l,
+            u = t.param || "callback",
+            p = null != t.timeout ? t.timeout : 2e4,
+            f = encodeURIComponent,
+            v = document.getElementsByTagName("script")[0] || document.head;
+        return p && (s = setTimeout(function() {
+            o(), n && n(new Error("Timeout"))
+        }, p)), window[d] = function(e) {
+            o(), n && n(null, e)
+        }, e += (~e.indexOf("?") ? "&" : "?") + u + "=" + f(d), e = e.replace("?&", "?"), a = document.createElement("script"), a.src = e, v.parentNode.insertBefore(a, v), r
+    }
+
+    function r(e, t, n) {
+        e.addEventListener ? e.addEventListener(t, n, !1) : e.attachEvent ? e.attachEvent("on" + t, n) : e["on" + t] = n
+    }
+
+    function a(e, t, n) {
+        e.removeEventListener ? e.removeEventListener(t, n, !1) : e.detachEvent ? e.detachEvent("on" + t, n) : e["on" + t] = null
+    }
+
+    function s() {
+        return window.matchMedia("only screen and (max-width: 767px)").matches
+    }
+
+    function c() {
+        ! function(e) {
+            function t() {
+                function t() {
+                    return !e.support.cors && window.XDomainRequest
+                }
+
+                function n() {
+                    return !window.matchMedia
+                }
+                var i = e.Deferred(),
+                    o = "//cdnjs.cloudflare.com/ajax/libs/jquery-ajaxtransport-xdomainrequest/1.0.2/jquery.xdomainrequest.min.js",
+                    r = y + "/assets/polyfills/match_media.js";
+                if (t() && n()) R = !0, e.when(e.getScript(o), e.getScript(r)).done(i.resolve);
+                else if (t()) R = !0, e.when(e.getScript(o)).done(i.resolve);
+                else {
+                    if (!n()) return i.resolve();
+                    e.when(e.getScript(r)).done(i.resolve)
+                }
+                return i.promise()
+            }
+            t().then(l)
+        }(jQuery)
+    }
+
+    function l() {
+        ! function(i) {
+            function c(e, t, n, r) {
+                n || (n = function() {}), r || (r = function() {}), i.ajax({
+                    url: e,
+                    data: t,
+                    dataType: "jsonp"
+                }).then(n, function(a, s, c) {
+                    X.warn("JSONP call to " + e + " has failed. Retrying with raw JSONP call."), X.warn("xhr: ", a, "status: ", s, "error: ", c);
+                    var l = e + "?" + i.param(t);
+                    o(l, function(e, t) {
+                        e ? (X.error("Could not perform JSON request. Url: ", l, "Error: ", e), r(a, s, c, e)) : (X.info("Raw JSONP call successful."), n(t))
+                    })
+                })
+            }
+
+            function l(e, t) {
+                var n = ft();
+                i(e).attr("id", n).addClass("gwi-widget").data(t), Dt[n] = i(e)
+            }
+
+            function b(e) {
+                if (!(Rt.isAppLink || e.isRefresh || e.isCombinedButton)) {
+                    ({
+                        watchable_type: e.type,
+                        watchable_id: e.id
+                    })
+                }
+            }
+
+            function x(e) {
+                if (!(Rt.isAppLink || e.isRefresh || e.isCombinedButton)) {
+                    {
+                        ({
+                            watchable_type: e.type,
+                            watchable_id: e.id
+                        })
+                    }
+                    Lt.trackButtonServe(e)
+                }
+            }
+
+            function C(e) {
+                // JW: original function name: trackingInfoFromParams
+                // Called by getDefaultAjaxData.
+                return {
+                    modality: tt(e),
+                    campaign: et(e),
+                    lead_partner_id: I(e)
+                }
+            }
+
+            function I() {
+                return Rt.partnerId
+            }
+
+            function Z() {
+                var e = n(Rt.originURL);
+                return e ? e.gwiCampaign : void 0
+            }
+
+            function et(e) {
+                return Z() || e.campaign || Rt.campaign
+            }
+
+            function tt(e) {
+                var t = e.modality || Rt.modality;
+                if (t) return t;
+                if (e.flavor || e.render) return e.flavor && !e.render ? e.flavor.replace("-", "_") + "_modal" : "microsite" === e.flavor || "microsite_v2" == e.flavor ? "microsite" : e.flavor.replace("-", "_") + "_" + e.render.replace("-", "_")
+            }
+
+            function nt(e) {
+                try {
+                    return e instanceof HTMLElement
+                } catch (t) {
+                    return "object" == typeof e && 1 === e.nodeType && "object" == typeof e.style && "object" == typeof e.ownerDocument
+                }
+            }
+
+            function it() {
+                var n = t.documentElement;
+                return {
+                    x: (e.pageXOffset || n.scrollLeft) - (n.clientLeft || 0),
+                    y: (e.pageYOffset || n.scrollTop) - (n.clientTop || 0)
+                }
+            }
+
+            function ot() {
+                var n = t.documentElement,
+                    i = t.getElementsByTagName("body")[0];
+                return {
+                    width: e.innerWidth || n.clientWidth || i.clientWidth,
+                    height: e.innerHeight || n.clientHeight || i.clientHeight
+                }
+            }
+
+            function rt() {
+                var e = t.documentElement,
+                    n = t.body;
+                return {
+                    width: Math.max(n.scrollWidth, e.scrollWidth, n.offsetWidth, e.offsetWidth, n.clientWidth, e.clientWidth),
+                    height: Math.max(n.scrollHeight, e.scrollHeight, n.offsetHeight, e.offsetHeight, n.clientHeight, e.clientHeight)
+                }
+            }
+
+            function at(e, t) {
+                i(e).css(t)
+            }
+
+            function st(e, t) {
+                i(e).attr(t)
+            }
+
+            function ct(e, t) {
+                var o = n(Rt.originURL);
+                o || (o = {});
+                var r, a = e.apiKey || Rt.apiKey || "",
+                    c = Rt.gwiHost || "https://gowatchit.com",
+                    l = Rt.anonymizerHost ? It(Rt) : Rt.anonymizerHost,
+                    d = e.theme || Rt.theme,
+                    u = e.render || Rt.render,
+                    p = e.flavor || Rt.flavor,
+                    f = et(e),
+                    v = tt(e),
+                    h = e.redirectRoute,
+                    g = e.initialCategory,
+                    m = Rt.isAppLink,
+                    b = I(e),
+                    w = e.draft,
+                    y = Rt.originURL,
+                    x = e.forceImpression,
+                    C = Rt.isFacebookTab,
+                    E = e.forceLocalOptions || Rt.forceLocalOptions,
+                    k = e.mobilePreference || Rt.mobilePreference,
+                    P = e.hideHeader || Rt.hideHeader,
+                    _ = e.modalMaxHeight || Rt.modalMaxHeight,
+                    T = o.gwiOpenAlert,
+                    S = e.combineOnlineOndemand,
+                    O = e.combineDvdBluray,
+                    W = e.layout || Rt.layout,
+                    M = Rt.externalLinks,
+                    A = e.tvSelectors,
+                    R = e.trailerUrlType,
+                    D = e.trailerUrl,
+                    L = e.trailerAutoplay,
+                    B = e.eventTitle,
+                    j = e.eventDescription,
+                    H = e.eventStartDate,
+                    z = e.eventEndDate,
+                    U = e.eventDuration,
+                    N = e.eventAddress,
+                    G = e.micrositeUrl,
+                    F = e.directvApiKey,
+                    V = e.dvrChannelNumber,
+                    q = e.dvrStartTime,
+                    K = e.facebookShareLink,
+                    Q = e.twitterShareLink,
+                    J = e.googlePlusShareLink,
+                    Y = e.externalWebsite,
+                    X = e.mobileLayout,
+                    $ = e.shareMessage,
+                    Z = e.assetId,
+                    nt = e.assetCampaign,
+                    it = e.origin,
+                    rt = e.originContext,
+                    at = e.hideUserActions,
+                    st = e.fixedHeight,
+                    ct = e.disableGeolocation,
+                    lt = Rt.openCalendar,
+                    dt = e.showMiniNav,
+                    ut = s();
+                void 0 === A && (A = !0), void 0 === O && (O = !0), void 0 === S && (S = !1), void 0 === P && (P = !1), void 0 === e.autoGeolocation && void 0 === Rt.autoGeolocation && (autoGeolocation = !0), "mini" === e.flavor && (autoGeolocation = !1), (e.autoGeolocation === !1 || Rt.autoGeolocation === !1) && (autoGeolocation = !1), (e.autoGeolocation === !0 || Rt.autoGeolocation === !0) && (autoGeolocation = !0);
+                var pt = 0;
+                return t && (pt = i(t).offset().top), r = i.extend({ // JW: You can add query params here. // edit the day after: I forgot for which request though. But this wasn't the spot that I needed to make localized requests work.
+                    id: e.id
+                }, {
+                    type: e.type
+                }, {
+                    flavor: p
+                }, {
+                    apiKey: a
+                }, {
+                    theme: d
+                }, {
+                    layout: W
+                }, {
+                    tvSelectors: A
+                }, {
+                    partnerId: Rt.partnerId
+                }, {
+                    leadPartnerId: b
+                }, {
+                    combineOnlineOndemand: S
+                }, {
+                    combineDvdBluray: O
+                }, {
+                    hideHeader: P
+                }, {
+                    viewportHeight: ot().height
+                }, {
+                    viewportScrollTop: i(window).scrollTop()
+                }, {
+                    widgetOffset: pt
+                }, {
+                    modalMaxHeight: _
+                }, {
+                    autoGeolocation: autoGeolocation
+                }, {
+                    isNarrowFrame: ut
+                }, l ? {
+                    anonymizerHost: l
+                } : {}, u ? {
+                    render: u
+                } : {}, c ? {
+                    gwiHost: c
+                } : {}, y ? {
+                    originURL: y
+                } : {}, h ? {
+                    redirectRoute: h
+                } : {}, g ? {
+                    initialCategory: g
+                } : {}, M ? {
+                    externalLinks: M
+                } : {}, f ? {
+                    campaign: f
+                } : {}, v ? {
+                    modality: v
+                } : {}, D ? {
+                    trailerUrl: D
+                } : {}, R ? {
+                    trailerUrlType: R
+                } : {}, L ? {
+                    trailerAutoplay: L
+                } : {}, m ? {
+                    isAppLink: m
+                } : {}, C ? {
+                    isFacebookTab: C
+                } : {}, E ? {
+                    forceLocalOptions: E
+                } : {}, k ? {
+                    mobilePreference: k
+                } : {}, x ? {
+                    forceImpression: x
+                } : {}, w ? {
+                    draft: w
+                } : {}, B ? {
+                    eventTitle: B
+                } : {}, j ? {
+                    eventDescription: j
+                } : {}, H ? {
+                    eventStartDate: H
+                } : {}, z ? {
+                    eventEndDate: z
+                } : {}, U ? {
+                    eventDuration: U
+                } : {}, N ? {
+                    eventAddress: N
+                } : {}, lt ? {
+                    openCalendar: lt
+                } : {}, G ? {
+                    micrositeUrl: G
+                } : {}, K ? {
+                    facebookShareLink: K
+                } : {}, Q ? {
+                    twitterShareLink: Q
+                } : {}, J ? {
+                    googlePlusShareLink: J
+                } : {}, Y ? {
+                    externalWebsite: Y
+                } : {}, X ? {
+                    mobileLayout: X
+                } : {}, $ ? {
+                    shareMessage: $
+                } : {}, dt ? {
+                    showMiniNav: dt
+                } : {}, F ? {
+                    directvApiKey: F
+                } : {}, V ? {
+                    dvrChannelNumber: V
+                } : {}, q ? {
+                    dvrStartTime: q
+                } : {}, T ? {
+                    autoOpenAlert: T
+                } : {}, Z ? {
+                    assetId: Z
+                } : {}, nt ? {
+                    assetCampaign: nt
+                } : {}, it ? {
+                    origin: it
+                } : {}, rt ? {
+                    originContext: rt
+                } : {}, at ? {
+                    hideUserActions: at
+                } : {}, ct ? {
+                    disableGeolocation: ct
+                } : {}, st ? {
+                    fixedHeight: st
+                } : {})
+            }
+
+            function lt(e, t, n) {
+                if (t && e) {
+                    n || (n = {});
+                    var o = n.pixelLocation || Rt.pixelLocation,
+                        r = "page" !== o;
+                    if (r) {
+                        var a = i('<iframe style="display: none;"></iframe>');
+                        i(e).append(a), a.get(0).contentDocument.write(t)
+                    } else {
+                        var s = i('<div style="display: none;"></div>');
+                        i(s).append(t), i(e).append(s)
+                    }
+                }
+            }
+
+            function dt(e, t) {
+                return e && (t.pixelEncoded || Rt.pixelEncoded) && (e = decodeURIComponent(e)), e
+            }
+
+            function ut(e, t) {
+                return i.param(ct(e, t))
+            }
+
+            function pt(e, t) {
+                var n = Et(e);
+                i.extend(e, n);
+                var o = Rt.anonymizerHost ? It(Rt) : Rt.anonymizerHost,
+                    r = o ? o + "/superwidget" : "https://superwidget.gowatchit.com/superwidget";
+                return r += "?" + ut(e, t)
+            }
+
+            function ft() {
+                return "gwi-superwidget-" + ++Mt
+            }
+
+            function vt(e, t) {
+                var n = ft(),
+                    o = pt(e, t);
+                X.debug("CREATING WIDGET FRAME"), X.debug("--SRC:", o), X.debug("-UNIT:", n);
+                // JW: IFRAME: o is indeed the src attribute of the iframe.
+                if (o.indexOf("&locale=") < 0) {
+                    var locale = window.gwiJWLocalePlsDontChange
+                    if (typeof locale !== "string" || locale.length !== 5 || locale[2] !== "_") {
+                        locale = "en_US"
+                    }
+                    o += "&locale=" + locale
+                }
+                // end JW:
+                var r = "mini" === e.flavor ? {
+                        visibility: "hidden"
+                    } : {
+                        visibility: "hidden",
+                        "min-width": "250px"
+                    },
+                    a = e.flavor + "-frame",
+                    s = At[n] = i("<iframe></iframe>").attr({
+                        src: o,
+                        "class": a,
+                        id: n,
+                        "options-expanded": "false",
+                        scrolling: "no",
+                        frameborder: "0",
+                        height: "100%",
+                        width: "100%",
+                        name: n
+                    }).css(r).data(e).get(0);
+                return s
+            }
+
+            function ht(e) {
+                At[e] && 0 !== i(At[e]).parent().length && i(At[e]).remove(), delete At[e]
+            }
+
+            function gt(e, t, n, o) {
+                if (!i.support.cors && window.XDomainRequest) return i('<div class="ie9-loader" style="text-align:center; margin-top: 200px;">Loading...</div>');
+                var r = i('<div class="loading-dots">');
+                "left" === t && r.addClass("left"), "center" === t && r.addClass("center"), n && r.addClass("inline"), o && r.addClass("invert-color");
+                for (var a = 0; e >= a; a++) r.append(i('<div class="bounce' + a + '"></div>'));
+                return r
+            }
+
+            function mt(e) {
+                return "hidden" !== i(e).css("visibility")
+            }
+
+            function bt(e) {
+                var t = i("#" + e);
+                mt(t) && (t.siblings(".loading-dots").remove(), t.siblings(".ie9-loader").remove())
+            }
+
+            function wt(e) {
+                var t = i("#" + e);
+                mt(t) || t.css("visibility", "visible")
+            }
+
+            function yt(e, t) {
+                var n = i("#" + e),
+                    o = jt.getFrame();
+                0 === n.length || !t && n.is(o) || (n.is(o) ? jt.updateDimensions({
+                    height: t + "px"
+                }) : n.css("height", t + "px"))
+            }
+
+            function xt() {
+                var t = i.Deferred();
+                return e.JSON ? t.resolve() : i.getScript("/json2.js").then(t.resolve), t.promise()
+            }
+
+            function Ct(e) {
+                if (!e.anonymizerHost) return X.debug("Skipping Allowed Region Check."), i.Deferred().resolve();
+                var t = (e.anonymizerHost ? e.anonymizerHost : It(e)) + P;
+                return i.ajax({
+                    url: t,
+                    crossDomain: !0,
+                    dataType: "json",
+                    data: Et(),
+                    error: function(e, t, n) {
+                        $.recordError("AllowedRegionCheck", "Error when querying API", {
+                            xhr: e,
+                            status: t,
+                            err: n
+                        }), X.error("Error in Allowed Region check."), X.error("xhr: " + e + "; status: " + t + "; err: " + n)
+                    }
+                }).then(function(e) {
+                    return e.allowed_region ? void 0 : i.Deferred().reject()
+                })
+            }
+
+            function It(e) {
+                var t = e.anonymizerHost || e.gwiHost || "https://gowatchit.com";
+                return window.location.protocol.indexOf("https") < 0 && R && (t = t.replace("https", "http")), t
+            }
+
+            function Et(e) {
+                // JW: original function name: getDefaultAjaxData
+                // Gets called everywhere throughout the file.
+                return e || (e = {}), i.extend({
+                    api_key: Rt.apiKey,
+                    origin_url: Rt.originURL,
+                    gwi_asset: !0 // JW: Can't add query params here.
+                }, C(e))
+            }
+
+            function kt(e, t, n) {
+                var i = Pt();
+                i(e, t, n)
+            }
+
+            function Pt() {
+                return e[e.GoWatchItAnalyticsObject]
+            }
+
+            function _t() {
+                var t = e.GoWatchItAnalyticsObject;
+                e[t] = e[t] || function() {
+                    (e[t].q = e[t].q || []).push(arguments)
+                }
+            }
+
+            function Tt(e) {
+                X.debug("Installing GWIMason");
+                var t = k + "/brick-layer.js";
+                window.GoWatchItMasonObject ? X.debug("GWIMason has already been initialized on this page.") : (! function(e, t, n, i, o, r, a) {
+                    e.GoWatchItMasonObject = o, e[o] = e[o] || {
+                        q: [],
+                        queue: function() {
+                            (e[o].q = e[o].q || []).push(arguments)
+                        }
+                    }, r = t.createElement(n), a = t.getElementsByTagName(n)[0], r.async = 1, r.src = i, a.parentNode.insertBefore(r, a)
+                }(window, document, "script", t, "GWIMason"), GWIMason.queue("configure", {
+                    apiKey: e.apiKey
+                }))
+            }
+
+            function St(n) {
+                var i = E + "/analytics.js";
+                if (e.GoWatchItAnalyticsObject = "_gwi_analytics_internal_function", _t(), n.apiKey) {
+                    var o = t.createElement("script"),
+                        r = t.getElementsByTagName("script")[0];
+                    o.async = 1, o.src = i, r.parentNode.insertBefore(o, r), kt("create", n.apiKey)
+                }
+            }
+
+            function Ot() {
+                if (e.GWI && "object" == typeof e.GWI ? Rt = e.GWI.config : (X.warn("Setting the widget config in a div is now deprecated. " + D), Rt = i("#gwi-widget-config").data()), Rt.originURL = e.location.href, Rt.impressionPixel || Rt.providerConversionPixel || Rt.alertConversionPixel) {
+                    X.warn("Setting separate impression, provider conversion, and alert conversion pixels on the widget config is now deprecated. Please regenerate your assets on https://dashboard.gowatchit.com to get up-to-date widget code.");
+                    var t = dt(Rt.impressionPixel, {}),
+                        n = dt(Rt.providerConversionPixel, {}),
+                        o = dt(Rt.alertConversionPixel, {});
+                    Rt.pixels = zt.getPixelsFromDeprecatedFormat(t, n, o)
+                }
+            }
+            var Wt = t.getElementById(d).src.match(/^https?:\/\/[^/]*/i).pop(),
+                Mt = 0,
+                At = {},
+                Rt = {},
+                Dt = {},
+                Lt = {
+                    trackLogOut: function(e) {
+                        this.sendEvent("logout", this.defaultOptionsFromParams(e))
+                    },
+                    trackAlertSet: function(e) {
+                        this.sendEvent("alert_set", this.defaultOptionsFromParams(e))
+                    },
+                    trackAddToQueue: function(e) {
+                        this.sendEvent("add_to_queue", this.defaultOptionsFromParams(e))
+                    },
+                    trackLogoServe: function(e) {
+                        this.sendEvent("logo_serve", this.defaultOptionsFromParams(e))
+                    },
+                    trackButtonServe: function(e) {
+                        this.sendEvent("button_serve", this.defaultOptionsFromParams(e))
+                    },
+                    trackImpression: function(e) {
+                        this.sendEvent("impression", this.defaultOptionsFromParams(e))
+                    },
+                    defaultOptionsFromParams: function(e) {
+                        return {
+                            contextType: e.type,
+                            contextId: e.id,
+                            campaign: e.campaign,
+                            medium: e.medium,
+                            mediumContext: e.mediumContext
+                        }
+                    },
+                    defaultOptions: function() {
+                        return {}
+                    },
+                    sendEvent: function(e, t) {
+                        t || (t = {});
+                        var n = i.extend(t, this.defaultOptions());
+                        kt("send", e, n)
+                    }
+                },
+                Bt = function() {
+                    function n(t, n, i) {
+                        l(t).then(function(o) {
+                            var r = JSON.stringify({
+                                event: T + n,
+                                frame: "_top",
+                                info: i || {}
+                            });
+                            S ? o.contentWindow.postMessage(r, Wt) : e.frames[t].location.hash = "#" + r
+                        })
+                    }
+
+                    function o(e, t) {
+                        e = "string" == typeof e ? e.split(/\s+/) : e, i.each(e, function(e, n) {
+                            c.hasOwnProperty(n) || (c[n] = []), c[n].push(t)
+                        })
+                    }
+
+                    function a(e) {
+                        var t;
+                        try {
+                            t = JSON.parse(e.data)
+                        } catch (n) {
+                            t = null
+                        }
+                        if (t && t.event && t.frame) {
+                            X.debug("XFrame message received: " + t.event), X.debug(t);
+                            var o = [t.event.replace(T, ""), t.info, t.frame];
+                            i.each(c[o[0]] || [], function(e, t) {
+                                t.apply(null, o)
+                            })
+                        }
+                    }
+                    var s = "",
+                        c = {},
+                        l = function() {
+                            function n() {
+                                for (var i = a.length - 1; i >= 0; i--) {
+                                    var s = t.getElementById(a[i]);
+                                    s && s.contentWindow && (r[a[i]].resolve(s), a.splice(i, 1))
+                                }
+                                o = a.length ? e.setTimeout(n, 25) : null
+                            }
+                            var o, r = {},
+                                a = [];
+                            return function(e) {
+                                return r.hasOwnProperty(e) || (r[e] = i.Deferred(), a.push(e), o || n()), r[e]
+                            }
+                        }();
+                    return S ? r(e, "message", a) : e.setInterval(function() {
+                        try {
+                            var t = e.location.hash;
+                            t !== s && (s = t, ~t.indexOf(T) && (e.location.hash = "#", a({
+                                data: t.substr(1)
+                            })))
+                        } catch (n) {}
+                    }, 50), {
+                        send: n,
+                        receive: o,
+                        dispatch: function(e, t, o) {
+                            var r = o ? [o] : [];
+                            i.each(At, function(i) {
+                                i !== e && n.apply(Bt, [i, t].concat(r))
+                            })
+                        }
+                    }
+                }(),
+                jt = function() {
+                    function n(e) {
+                        return "string" == typeof e && ~e.indexOf("%")
+                    }
+
+                    function o(e, t) {
+                        return n(e) ? ~~(t * (parseFloat(e) / 100)) : parseInt(e)
+                    }
+
+                    function a(e) {
+                        function t(e, t) {
+                            return t - o(e, t) >> 1
+                        }
+                        var n = Rt.modalMaxHeight ? {
+                                width: M + "px"
+                            } : {},
+                            r = ot(),
+                            a = r.width < W ? i(window).scrollTop() + .05 * r.height : i(window).scrollTop() + .15 * r.height,
+                            s = r.width < W ? i.extend({}, h.mobile, e || {}) : i.extend({}, h.desktop, n, e || {});
+                        return s.top = t(s.height, r.height) + i(window).scrollTop(), s.top < a && (s.top = a), s.top += "px", s.left = t(s.width, r.width) + "px", i.extend({
+                            position: "absolute"
+                        }, s)
+                    }
+
+                    function s() {
+                        w && i(w).attr("id") && ht(i(w).attr("id")), g && 0 !== i(g).parent().length && i(g).remove(), m && 0 !== i(m).parent().length && i(m).remove(), g = m = b = w = null, e.onGwiModalClose && "function" == typeof e.onGwiModalClose && e.onGwiModalClose()
+                    }
+
+                    function c() {
+                        return !!(g || m || b || w)
+                    }
+
+                    function l(n, r) {
+                        var l, d, h, y, x, C, I, E = a(),
+                            k = {};
+                        c() && s(), m = i("<div></div>").addClass("gwi-blocker").css(f).get(0), g = i("<div></div>").addClass("gwi-modal-dialog").css(u).get(0), b = i("<div></div>").addClass("gwi-modal-content").css(p).get(0), Rt.modalMaxHeight && (k = {
+                            "max-height": Rt.modalMaxHeight,
+                            "overflow-y": "scroll",
+                            "overflow-x": "hidden",
+                            "-webkit-overflow-scrolling": "touch"
+                        }, i(g).css(k), i(b).css({
+                            height: "inherit"
+                        }), i(g).scroll(function() {
+                            for (var e in At) Bt.send(e, "modal-widget-scroll-change", {
+                                modalWidgetScrollTop: -1 * i(b).position().top
+                            })
+                        })), i(t.body).append(m).append(g), i(b).append(gt(3, "center", !0)), i(g).append(b);
+                        var P = i.Deferred(),
+                            _ = i.Deferred();
+                        r && r.animate ? (I = r.animate.frame ? At[r.animate.frame].getBoundingClientRect() : {
+                            left: 0,
+                            top: 0
+                        }, x = o(E.width, ot().width), C = o(E.height, ot().height), l = I.left + r.animate.rect.left, h = I.top + r.animate.rect.top + i(window).scrollTop(), d = parseInt(E.left), y = parseInt(E.top), i(g).css({
+                            left: l,
+                            top: h,
+                            width: r.animate.rect.width,
+                            height: r.animate.rect.height
+                        }), i(g).animate({
+                            left: d,
+                            top: y,
+                            width: x,
+                            height: C,
+                            opacity: 1
+                        }, O, function() {
+                            i(g).css("overflow", "").css(k), _.resolve()
+                        }), i(m).animate({
+                            opacity: .75
+                        }, O, function() {
+                            P.resolve()
+                        })) : (_.resolve(), P.resolve()), _.then(function() {
+                            at(g, i.extend({
+                                opacity: 1
+                            }, E)), w = vt(n), at(w, v), i(b).append(w), e.onGwiModalOpen && "function" == typeof e.onGwiModalOpen && e.onGwiModalOpen()
+                        })
+                    }
+
+                    function d(e) {
+                        if (null !== g) {
+                            at(g, i.extend({
+                                opacity: 1
+                            }, a(e || {}))), at(w, {
+                                height: a(e || {}).height
+                            });
+                            for (var t in At) Bt.send(t, "modal-position-change", {
+                                modalTop: parseInt(a(e || {}).top)
+                            })
+                        }
+                    }
+                    var u = {
+                            position: "absolute",
+                            margin: 0,
+                            opacity: .5,
+                            zIndex: 10102,
+                            "box-sizing": "border-box"
+                        },
+                        p = {
+                            position: "relative",
+                            border: "1px solid #e5e5e5",
+                            borderRadius: "3px",
+                            webkitBoxShadow: "0 0 2px 2px rgba(224, 224, 224, 0.45)",
+                            mozBoxShadow: "0 0 2px 2px rgba(224, 224, 224, 0.45)",
+                            boxShadow: "0 0 2px 2px rgba(224, 224, 224, 0.45)",
+                            outline: 0,
+                            height: "100%",
+                            width: "100%",
+                            webkitBoxSizing: "content-box",
+                            mozBoxSizing: "content-box",
+                            boxSizing: "content-box"
+                        },
+                        f = {
+                            position: "fixed",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: "100%",
+                            opacity: 0,
+                            backgroundColor: "#fff",
+                            zIndex: 10101
+                        },
+                        v = {
+                            borderRadius: "3px",
+                            display: "block"
+                        },
+                        h = {
+                            mobile: {
+                                width: "95%",
+                                height: "95%"
+                            },
+                            desktop: {
+                                width: "768px",
+                                height: "500px"
+                            }
+                        },
+                        g = null,
+                        m = null,
+                        b = null,
+                        w = null;
+                    return r(e, "resize", function() {
+                        null !== g && at(g, i.extend({
+                            opacity: 1
+                        }, a()));
+                        for (var e in At) Bt.send(e, "viewport-resize", {
+                            viewportHeight: i(window).height()
+                        })
+                    }), {
+                        show: l,
+                        remove: s,
+                        updateDimensions: d,
+                        getFrame: function() {
+                            return w
+                        },
+                        getContent: function() {
+                            return b
+                        },
+                        isVisible: function() {
+                            return null !== g
+                        }
+                    }
+                }(),
+                Ht = function(e) {
+                    this.type = e.type, this.pixel = e.pixel, this.providerFormatId = e.providerFormatId || e.provider_format_id
+                };
+            Ht.prototype.ALERT_TYPE = "alert", Ht.prototype.IMPRESSION_TYPE = "impression", Ht.prototype.PROVIDER_TYPE = "provider", Ht.prototype.isAlertPixel = function() {
+                return this.type === this.ALERT_TYPE
+            }, Ht.prototype.isImpressionPixel = function() {
+                return this.type === this.IMPRESSION_TYPE
+            }, Ht.prototype.isProviderPixel = function() {
+                return this.type === this.PROVIDER_TYPE
+            };
+            var zt = {
+                getPixels: function(e) {
+                    var t = e.pixels || Rt.pixels;
+                    if (!t) return [];
+                    try {
+                        var n = decodeURIComponent(t);
+                        return JSON.parse(n).map(function(e) {
+                            return new Ht(e)
+                        })
+                    } catch (i) {
+                        return X.error("Failed to get pixels from params. err: " + i), $.recordError("GetPixelsFailed", "Failed to get pixels from params.", {
+                            err: i
+                        }), []
+                    }
+                },
+                getAlertPixels: function(e) {
+                    return this.getPixels(e).filter(function(e) {
+                        return e.isAlertPixel()
+                    })
+                },
+                getImpressionPixels: function(e) {
+                    return this.getPixels(e).filter(function(e) {
+                        return e.isImpressionPixel()
+                    })
+                },
+                getProviderPixels: function(e, t) {
+                    var n = this.getPixels(e).filter(function(e) {
+                            return e.isProviderPixel()
+                        }),
+                        i = n.filter(function(e) {
+                            return e.providerFormatId && e.providerFormatId == t
+                        });
+                    return 0 !== i.length ? i : n.filter(function(e) {
+                        return !e.providerFormatId
+                    })
+                },
+                getCombinedPixelText: function(e) {
+                    var t = "\n";
+                    return e.map(function(e) {
+                        return e.pixel
+                    }).join(t)
+                },
+                constructPixel: function(e, t, n) {
+                    return {
+                        type: e,
+                        pixel: t,
+                        provider_format_id: n
+                    }
+                },
+                getPixelsFromDeprecatedFormat: function(e, t, n) {
+                    var i = [];
+                    return e && i.push(this.constructPixel(Ht.prototype.IMPRESSION_TYPE, e)), t && i.push(this.constructPixel(Ht.prototype.PROVIDER_TYPE, t)), n && i.push(this.constructPixel(Ht.prototype.ALERT_TYPE, n)), encodeURIComponent(JSON.stringify(i))
+                }
+            };
+            X.debug("booting..."), X.debug("checking availability..."), i.when(xt()).then(function() {
+                Ot(), Wt = Rt.anonymizerHost ? It(Rt) : w, Ct(Rt).then(function() {
+                    function t(e, t) {
+                        t || (t = i(e).data()), X.info("GWI.injectWidget is now deprecated. Please use GWI.display instead. " + D), t = Vt(t), t = Qt(t), t.flavor = "alert", t.render = "power-button", Xt(e, t)
+                    }
+
+                    function o(e, t) {
+                        var n = i.extend({
+                                flavor: Rt.widgetFlavor
+                            }, t || i(e).data()),
+                            o = vt(n, e),
+                            r = i("<div></div>").addClass(f).css("height", 300).append(gt(3, "center", !0));
+                        r.append(o), i(e).replaceWith(r)
+                    }
+
+                    function d() {
+                        var privacyLinks = '<div class="privacy-and-terms"><a target="_blank" href="http://www.gowatchit.com/pages/privacy">Privacy</a><a target="_blank" href="http://www.gowatchit.com/pages/privacy#interest-based-ad">Ad Choices</a></div>';
+                        var e = '<a class="powered-by" target="blank" href="https://www.gowatchit.com"><div class="icon-gowatchit" style="max-width:25px;">' + v + '</div><span>GoWatchIt</span></a>'+privacyLinks;
+                        var isMigrated = window.hasOwnProperty("isMigratedPartnerPlsDontEdit") ? window.isMigratedPartnerPlsDontEdit : false;
+                        if (isMigrated) {
+                            e = "<span></span>"
+                        }
+                        return e
+                    }
+
+                    function w(e) {
+                        return i("<div/>").text(e).html()
+                    }
+
+                    function C(e) {
+                        var t = "";
+                        return t += '<div class="footer power-button-footer clearfix"><div class="footer-left">', t += e ? '<span class="greeting">Hi, ' + w(e) + '</span><a href="#" class="power-button-sign-out">Sign Out</a>' : '<a href="#" class="power-button-sign-in">Sign in now</a>', t += "</div>", t += '<div class="footer-right powered-by-holder clearfix">' + d() + "</div></div>"
+                    }
+
+                    function E(e) {
+                        e.preventDefault();
+                        var t = "/api/v3/session/logout",
+                            n = e.data.params,
+                            i = It(Rt) + t,
+                            o = Et(n);
+                        c(i, o, function() {
+                            Lt.trackLogOut(n), Jt()
+                        }, function(e, t, n, i) {
+                            X.error("Unable to logout through jsonp call."), $.recordError("LogoutError", "Unable to logout through jsonp call.", {
+                                xhr: e,
+                                status: t,
+                                error: n,
+                                rawJsonPError: i
+                            })
+                        })
+                    }
+
+                    function k(e) {
+                        e.preventDefault();
+                        var t, n = e.data.params,
+                            o = e.data.button;
+                        t = i.extend({}, n, {
+                            redirectRoute: "sign-in",
+                            animate: i(o).get(0)
+                        }), nn(t)
+                    }
+
+                    function P(e, t) {
+                        e.find(".power-button-sign-out").on("click", {
+                            params: t
+                        }, E), e.find(".power-button-sign-in").on("click", {
+                            params: t,
+                            button: e
+                        }, k)
+                    }
+
+                    function T(e) {
+                        var t;
+                        switch (e) {
+                            case "Add to Queue":
+                                t = "Queue It";
+                                break;
+                            case "Set TV Alert":
+                            case "Set Movie Alert":
+                                t = "Set Alert";
+                                break;
+                            default:
+                                t = e
+                        }
+                        return t
+                    }
+
+                    function S(e, t, n, o, r) {
+                        r || (r = {});
+                        var a;
+                        switch (o.flavor) {
+                            case "alert":
+                                a = "alert-button";
+                                break;
+                            case "availability":
+                                a = "availability-button";
+                                break;
+                            case "link":
+                                a = "link-button"
+                        }
+                        o.buttonText && (o.forceLocalOptions || Rt.forceLocalOptions) && (t = o.buttonText), o.buttonWidth < 120 && (t = T(t));
+                        var s = i("<div></div>").addClass(a),
+                            c = i("<button></button>").addClass("btn-gwi btn-gwi-block"),
+                            l = i(C(r.greeting));
+                        var isMigrated = window.hasOwnProperty("isMigratedPartnerPlsDontEdit") ? window.isMigratedPartnerPlsDontEdit : false;
+                        if (isMigrated) {
+                            //JW: same like bellow just without "icon-gowatchit" for $icon = "icon-gowatchit". We do this because impactpartnersfilm has an ugly hole where the logo used to be
+                            return $icon = "icon-gowatchit" === n ? i('<div class="icon" style="max-width:25px;"></div>').append(v) : "icon-email" === n ? i('<div class="icon icon-email" style="max-width:25px;"></div>').append(h) : "icon-calendar" === n ? i('<div class="icon icon-calendar" style="max-width:25px;"></div>').append(g) : i('<div class="icon ' + n + '">'), $btnText = i("<span></span>").addClass("btn-text").html(t), c.append($icon).append($btnText), s.html(c), "power-button" === o.render && s.append(l), o.buttonWidth < 120 && (c.find(".icon").hide(), l.hide()), i(e).html(s), P(i(e), o), c
+                        }
+                        return $icon = "icon-gowatchit" === n ? i('<div class="icon icon-gowatchit" style="max-width:25px;"></div>').append(v) : "icon-email" === n ? i('<div class="icon icon-email" style="max-width:25px;"></div>').append(h) : "icon-calendar" === n ? i('<div class="icon icon-calendar" style="max-width:25px;"></div>').append(g) : i('<div class="icon ' + n + '">'), $btnText = i("<span></span>").addClass("btn-text").html(t), c.append($icon).append($btnText), s.html(c), "power-button" === o.render && s.append(l), o.buttonWidth < 120 && (c.find(".icon").hide(), l.hide()), i(e).html(s), P(i(e), o), c
+                    }
+
+                    function O(e) {
+                        var t = Rt.anonymizerHost ? It(Rt) : y,
+                            n = t + "/assets/",
+                            o = "gwi-widget-button-theme-" + e + "-style";
+                        if (0 === i("#" + o).length) {
+                            X.debug("adding stylesheet...");
+                            var r = {
+                                id: o,
+                                rel: "stylesheet",
+                                type: "text/css",
+                                href: n + Y[e]
+                            };
+                            googleFontsAttrs = {
+                                rel: "stylesheet",
+                                type: "text/css",
+                                href: "https://fonts.googleapis.com/css?family=Open+Sans:400,300,700,800"
+                            };
+                            var a = i("<link></link>").attr(r),
+                                s = i("<link></link>").attr(googleFontsAttrs);
+                            i("head").append(a).append(s)
+                        }
+                    }
+
+                    function W(e) {
+                        i(e).prop("disabled", !0)
+                    }
+
+                    function M(e, t) {
+                        var n, o, r = !0;
+                        return n = i.map(e, function(e) {
+                            return e.disclosure_id
+                        }), o = i.map(t, function(e) {
+                            return e.id
+                        }), i.each(o, function(e, t) {
+                            r = r && -1 !== i.inArray(t, n)
+                        }), r
+                    }
+
+                    function R(e) {
+                        i(e).children().hide(), i(e).append(gt(3, "center", !1, !0))
+                    }
+
+                    function Z(e) {
+                        i(e).find(".loading-dots").remove(), i(e).children().show()
+                    }
+
+                    function et(e) {
+                        var t = "/api/v3/" + e.type + "s/" + e.id + "/superwidget/status",
+                            n = It(Rt) + t,
+                            o = Et(e),
+                            r = i.Deferred();
+                        return c(n, o, function(e) {
+                            r.resolve(e)
+                        }, function(e, t, n, i) {
+                            X.error("Unable to fetch the alert button status."), $.recordError("AlertButtonStatusError", "Unable to retrieve alert button status jsonp call.", {
+                                xhr: e,
+                                status: t,
+                                error: n,
+                                rawJsonPError: i
+                            }), r.reject()
+                        }), r.promise()
+                    }
+
+                    function ct(e, t) {
+                        return et(t).then(function(n) {
+                            var o = n.status.text,
+                                r = n.status.disclosures,
+                                a = n.status.requiredDisclosures,
+                                s = n.status.isRegisteredUser,
+                                c = n.status.auth_token,
+                                l = n.status.greeting,
+                                d = S(e, o, "icon-email", t, {
+                                    greeting: l
+                                });
+                            ("episode" === t.type || "season" === t.type) && (t.type = "show", t.id = n.status.show_id), n.status.inQueue ? W(d) : n.status.isUserSignedIn && M(r, a) ? (Lt.trackImpression(t), i(d).on("click", function(e) {
+                                e.preventDefault();
+                                var n = i(d);
+                                R(n), pt(t.type, t.id, c, t).then(function() {
+                                    var e = "movie" === t.type && s ? "In Queue" : "Alert Set";
+                                    s ? Lt.trackAddToQueue(t) : Lt.trackAlertSet(t), Z(n), n.find(".btn-text").html(e), W(n), rn(t)
+                                })
+                            })) : i(d).on("click", {
+                                button: d,
+                                params: t
+                            }, ft)
+                        })
+                    }
+
+                    function pt(e, t, n, o) {
+                        var r = "/api/v3/" + e + "s/" + t + "/quick_alert",
+                            a = {
+                                auth_token: n
+                            };
+                        return i.ajax({
+                            url: It(Rt) + r,
+                            type: "POST",
+                            data: i.extend(Et(o), a)
+                        })
+                    }
+
+                    function ft(e) {
+                        var t = e.data.params;
+                        if (e.preventDefault(), s() && "transition" === t.mobilePreference) {
+                            t.render = "inline";
+                            var n = It(Rt) + "/superwidget/app?" + ut(t);
+                            window.open(n)
+                        } else nn(t)
+                    }
+
+                    function ht(e) {
+                        var t = It(Rt) + "/api/v3/" + e.type + "s/" + e.id + "/superwidget";
+                        return i.ajax({
+                            url: t,
+                            data: {
+                                api_key: Rt.apiKey,
+                                gwi_asset: !0
+                            }
+                        }).then(function(e) {
+                            return e.config.availability_button_text || "Watch Now"
+                        })
+                    }
+
+                    function mt(e, t) {
+                        return ht(t).then(function(n) {
+                            var o = S(e, n, "icon-gowatchit", t);
+                            i(o).on("click", {
+                                button: o,
+                                params: t
+                            }, ft)
+                        })
+                    }
+
+                    function xt(e, t) {
+                        var n = S(e, "GoWatchIt", "icon-gowatchit", t);
+                        i(n).on("click", function(e) {
+                            e.preventDefault();
+                            var n = t.campaign || Rt.campaign,
+                                i = It(Rt);
+                            "movie" === t.type && (i += "/movies/" + t.id), i += "?lead_partner_id=" + I(t), i += "&modality=" + tt(t), n && (i += "&campaign=" + encodeURIComponent(n)), window.open(i)
+                        })
+                    }
+
+                    function Ct(e, t) {
+                        t || (t = i(e).data()), X.info("GWI.showButton is now deprecated. Please use GWI.display instead. " + D), t = Vt(t), t = Qt(t), "availability" == t.flavor ? t.render = "button" : "alert" == t.flavor && (t.render = "simple-button"), Xt(e, t)
+                    }
+
+                    function Pt(e, t) {
+                        t || (t = i(e).data()), t.flavor = t.flavor || "alert", t.buttonWidth = t.buttonWidth || "auto", t.buttonBgColor = t.buttonBgColor || null, t.buttonTextColor = t.buttonTextColor || null, "auto" !== t.buttonWidth && (t.buttonWidth = parseInt(t.buttonWidth, 10)), "alert" === t.flavor ? ct(e, t).then(function() {
+                            Ht(e, t)
+                        }) : "availability" === t.flavor ? mt(e, t).then(function() {
+                            Ht(e, t)
+                        }) : "calendar" === t.flavor ? (Ot(e, t), Ht(e, t)) : "link" === t.flavor && (xt(e, t), Ht(e, t)), l(e, t)
+                    }
+
+                    function _t(e) {
+                        var t = It(Rt) + "/api/v3/" + e.type + "s/" + e.id;
+                        return i.ajax({
+                            url: t,
+                            data: Et(e)
+                        }).then(function(t) {
+                            return t[e.type]
+                        })
+                    }
+
+                    function Ot(t, n) {
+                        var o = n.buttonText || "Add to Calendar",
+                            r = S(t, o, "icon-calendar", n);
+                        i(r).on("click", {
+                            button: r,
+                            params: n
+                        }, ft), "movie" === n.type && n.micrositeUrl && _t(n).then(function(t) {
+                            t.in_theaters && (i(r).off("click"), i(r).on("click", function() {
+                                var t = Wt(n.micrositeUrl);
+                                e.open(t)
+                            }))
+                        })
+                    }
+
+                    function Wt(e) {
+                        var t = -1 === e.indexOf("?") ? "?" : "&";
+                        return e + t + "modality=calendar_button&openCalendar=true"
+                    }
+
+                    function Mt(e, t) {
+                        var n, o, r = i.extend({}, t, {
+                                render: "button",
+                                flavor: "availability",
+                                modality: "availability_combined",
+                                originContext: "availability_combined",
+                                isCombinedButton: !0
+                            }),
+                            a = i.extend({}, t, {
+                                render: "power-button",
+                                flavor: "alert",
+                                modality: "alert_combined",
+                                originContext: "alert_combined",
+                                isCombinedButton: !0
+                            });
+                        t.modality = tt(t), n = i(e).clone().attr({
+                            "data-render": "button",
+                            "data-flavor": "availability"
+                        }), n.addClass("gwi-subwidget"), i(e).append(n), Xt(n.get(0), r), o = i(e).clone().attr({
+                            "data-render": "power-button",
+                            "data-flavor": "alert"
+                        }), o.addClass("gwi-subwidget"), i(e).append(o), Xt(o.get(0), a)
+                    }
+
+                    function Ht(e, t) {
+                        var n = i(e).find("." + A),
+                            o = i(e).find(".icon");
+                        "auto" !== t.buttonWidth ? i(e).width(t.buttonWidth) : t.buttonWidth = i(e).width(), t.buttonWidth <= 5 && i(e).css("font-size", "14px"), t.buttonWidth > 5 && t.buttonWidth <= 120 && (n.addClass("text-center"), i(e).css("font-size", .135 * t.buttonWidth)), t.buttonWidth > 120 && t.buttonWidth <= 175 && i(e).css("font-size", .075 * t.buttonWidth), t.buttonWidth > 175 && i(e).css("font-size", "14px"), t.buttonBgColor && (t.buttonBorderColor || (t.buttonBorderColor = t.buttonBgColor), n.css({
+                            "background-color": t.buttonBgColor,
+                            "background-image": "none"
+                        }), n.hover(function() {
+                            n.css(t.buttonHoverBgColor ? {
+                                "background-color": t.buttonHoverBgColor
+                            } : {
+                                opacity: .75
+                            })
+                        }, function() {
+                            n.css({
+                                "background-color": t.buttonBgColor,
+                                opacity: 1
+                            })
+                        })), t.buttonTextColor && (at(n, {
+                            color: t.buttonTextColor
+                        }), at(o, {
+                            fill: t.buttonTextColor
+                        }), n.hover(function() {
+                            var e = t.buttonHoverTextColor ? t.buttonHoverTextColor : t.buttonTextColor;
+                            n.css({
+                                color: e
+                            }), o.css({
+                                fill: e
+                            })
+                        }, function() {
+                            n.css({
+                                color: t.buttonTextColor
+                            }), o.css({
+                                fill: t.buttonTextColor
+                            })
+                        })), t.buttonBorderColor && (at(n, {
+                            borderColor: t.buttonBorderColor
+                        }), n.hover(function() {
+                            t.buttonHoverBorderColor && n.css({
+                                "border-color": t.buttonHoverBorderColor
+                            })
+                        }, function() {
+                            n.css({
+                                "border-color": t.buttonBorderColor,
+                                opacity: 1
+                            })
+                        })), t.buttonBackgroundImageUrl && (t.buttonBgImageUrl = t.buttonBackgroundImageUrl, X.info("buttonBackgroundImageUrl is now deprecated. Please use buttonBgImageUrl instead. " + D)), t.buttonBgImageUrl && (n.css("background", "url(" + t.buttonBgImageUrl + ")"), n.children().css("visibility", "hidden"), t.buttonBorderColor || n.css("border", "none")), t.style && X.info('data-style is now deprecated. Please use flavor "data-button-style" instead. ' + D);
+                        var r = t.buttonStyle || t.style || null;
+                        r && n.attr("style", r), t["class"] && X.info('data-class is now deprecated. Please use flavor "data-button-class" instead. ' + D);
+                        var a = t.buttonClass || t["class"] || null;
+                        a && n.addClass(a)
+                    }
+
+                    function Ut(e) {
+                        var t = {
+                            term: e
+                        };
+                        return i.ajax({
+                            url: It(Rt) + _,
+                            data: i.extend(Et(), t)
+                        })
+                    }
+
+                    function Nt(t, n) {
+                        Ut(n.search).then(function(i) {
+                            var o, r = i.search.movies[0],
+                                a = i.search.shows[0],
+                                s = n.type,
+                                c = {
+                                    movie: r,
+                                    show: a
+                                };
+                            if (n.type && "movie" !== n.type ? s = "show" : n.type || (s = r ? "movie" : "show"), o = c[s]) X.debug("Search found " + s + ' with search term "' + n.search + '"'), delete n.search, n.id = o.id, n.type = s, Xt(t, n);
+                            else {
+                                var l;
+                                l = n.type && "movie" !== n.type ? "TV Show" : n.type ? "Movie" : "Movie or TV Show", X.warn("No " + l + ' found with search term: "' + n.search + '"')
+                            }
+                            e.goWatchItSearchCallback && "function" == typeof e.goWatchItSearchCallback && e.goWatchItSearchCallback(!!o)
+                        })
+                    }
+
+                    function Gt(e) {
+                        var t = e.id,
+                            n = It(Rt) + "/api/v3/shows/" + t + "/latest_available_episode";
+                        return i.ajax({
+                            url: n,
+                            data: Et(e)
+                        })
+                    }
+
+                    function Ft(e, t) {
+                        return delete t.selectedEpisode, Gt(t).then(function(n) {
+                            t.id = n.episode.id, t.type = "episode", X.debug("Found latest episode. Loading widget with episode #" + t.id), Xt(e, t)
+                        }, function() {
+                            X.warn("There is no episode available for show #" + t.id + ". Loading widget for show."), Xt(e, t)
+                        })
+                    }
+
+                    function Vt(e) {
+                        e.id = parseInt(e.id), e.theme = e.theme || Rt.theme || "default";
+                        var t = "mini" === e.flavor ? "list" : "tabs";
+                        return e.layout = e.layout || t, e.render = e.render || "inline", e
+                    }
+
+                    function qt(e, t, n) {
+                        X.error("Invalid parameter for " + e + ": '" + t + "'. Accepted parameters: " + n.join(", "))
+                    }
+
+                    function Kt(e, t) {
+                        var n, o = parseInt(e.id),
+                            r = {
+                                alert: H,
+                                availability: j,
+                                link: LINK_RENDERS,
+                                trailer: U,
+                                "tune-in": z,
+                                microsite: N,
+                                calendar: G,
+                                mini: F,
+                                list: V,
+                                directv: q,
+                                microsite_v2: K
+                            };
+                        if (isNaN(o) || 1 > o) return X.error("Invalid parameter for id: '" + e.id + "'. Must be a positive number."), !1;
+                        if (!e.type || i.inArray(e.type, L) < 0) return qt("type", e.type, L), !1;
+                        if (i.inArray(e.flavor, B) < 0) return qt("flavor", e.flavor, B), !1;
+                        if (!t && (n = r[e.flavor], i.inArray(e.render, n) < 0)) return qt("render", e.render, n), !1;
+                        if ("trailer" == e.flavor) {
+                            if (i.inArray(e.trailerUrlType, J) < 0) return qt("trailerUrlType", e.trailerUrlType, J), !1;
+                            if (!e.trailerUrl) return X.error("You must provide a trailerURl."), !1
+                        }
+                        if ("calendar" === e.flavor) {
+                            if (!e.eventStartDate || isNaN(new Date(e.eventStartDate).getTime())) return X.error("Invalid eventStartDate: '" + e.eventStartDate + "'"), !1;
+                            if (!e.eventEndDate && !e.eventDuration) return X.error("Must specify an eventEndDate or eventDuration."), !1;
+                            if (e.eventEndDate && isNaN(new Date(e.eventEndDate).getTime())) return X.error("Invalid eventEndDate: '" + e.eventEndDate + "'"), !1;
+                            if (e.eventDuration && isNaN(parseInt(e.eventDuration))) return X.error("Invalid eventDuration: '" + e.eventDuration + "'"), !1
+                        }
+                        if (e.selectedEpisode) {
+                            if ("show" != e.type) return X.error('Invalid type "' + e.type + '". Type must be "show" when selectedEpisode is enabled.'), !1;
+                            if (i.inArray(e.selectedEpisode, Q) < 0) return qt("selectedEpisode", e.selectedEpisode, Q), !1
+                        }
+                        return !0
+                    }
+
+                    function Qt(e) {
+                        if ("quick-alert" === e.flavor ? (X.warn('Widget flavor "quick-alert" is now deprecated. Please use flavor "alert" instead. ' + D), e.flavor = "alert") : "availabilities" === e.flavor && (X.warn('Widget flavor "availabilities" is now deprecated. Please use flavor "availability" instead. ' + D), e.flavor = "availability"), e.categories && (X.warn("Categories is now deprecated. Please use combineOnlineOndemand flag instead. " + D), e.combineOnlineOndemand = 3 == e.categories), e.impressionPixel || e.alertConversionPixel || e.providerConversionPixel) {
+                            X.warn("Setting separate impression, provider conversion, and alert conversion pixels on the widget is now deprecated. Please regenerate your assets on https://dashboard.gowatchit.com to get up-to-date widget code.");
+                            var t = dt(e.impressionPixel, e),
+                                n = dt(e.alertConversionPixel, e),
+                                i = dt(e.providerConversionPixel, e);
+                            e.pixels = zt.getPixelsFromDeprecatedFormat(t, i, n)
+                        }
+                        return e
+                    }
+
+                    function Jt() {
+                        i.each(Dt, function(e, t) {
+                            var n = i(t),
+                                o = n.data();
+                            o.isRefresh = !0, "alert" === o.flavor && Xt(n.get(0), o)
+                        })
+                    }
+
+                    function Yt(e, t) {
+                        if (t || (t = i(e).data()), t.medium = "logo", t.mediumContext = "standard", t.type || t.id || (t.type = "Movie", t.id = -1), !t.type || !t.id) return void X.error("Unrecognized type/id passed. type='" + t.type + "', id='" + t.id + "'.");
+                        var n = '<div class="footer powered-by-holder clearfix">' + d() + "</div>";
+                        Lt.trackLogoServe(t), i(e).addClass(p).append(n)
+                    }
+
+                    function Xt(e, t) {
+                        if (t || (t = i(e).data()), t.render || (t.render = "power-button"), t.search) return void Nt(e, t);
+                        if (t = Vt(t), t = Qt(t), Kt(t, !1)) {
+                            if (t.selectedEpisode && "latest-available" === t.selectedEpisode) return void Ft(e, t);
+                            var n = t.flavor,
+                                r = t.render,
+                                a = r.indexOf("button") > -1 || "combined" === r,
+                                s = "inline" === r;
+                            t.modality || (t.modality = tt(t)), 0 != t.animate && (t.animate = e), a && !t.isCombinedButton && (t.origin = "button", t.originContext = n), "alert" === n ? "power-button" === r || "simple-button" === r ? (t.isCombinedButton || (t.originContext = "alert_" + r.replace("-button", "")), Pt(e, t)) : "inline" === r ? o(e, t) : "combined" === r && Mt(e, t) : "availability" === n ? "button" === r ? Pt(e, t) : "rail" === r ? o(e, t) : "inline" === r ? o(e, t) : "combined" === r && Mt(e, t) : "trailer" === n ? "inline" === r && o(e, t) : "link" === n ? "button" === r && Pt(e, t) : "tune-in" === n ? "inline" === r && o(e, t) : "microsite" === n ? "inline" === r && o(e, t) : "microsite_v2" === n ? "inline" === r && o(e, t) : "calendar" === n ? "inline" === r ? o(e, t) : "button" === r && Pt(e, t) : "mini" === n ? "inline" === r && ("bafdeb32063e698a23098e34" === Rt.apiKey && (t.layout = "list"), o(e, t)) : "directv" === n ? "inline" === r && o(e, t) : "list" === n ? "inline" === r && o(e, t) : X.error("Unrecognized flavor/render combo."), s ? b(t) : a ? (t.medium = t.origin, t.mediumContext = t.originContext, x(t)) : X.error("Neither inline or button, not firing any widget/button serve. Render value is: " + r)
+                        }
+                    }
+
+                    function $t() {
+                        i("a").each(function() {
+                            var e = i(this).attr("href"),
+                                t = ("" + e).match(m);
+                            if (t) {
+                                var n = Rt.widgetFlavor,
+                                    o = {
+                                        id: t.pop(),
+                                        type: t.pop(),
+                                        flavor: n
+                                    };
+                                if ("alert" === n) {
+                                    o.trigger = "power-button";
+                                    var r = vt(o);
+                                    r.setAttribute("data-href", e), i(this).replaceWith(r)
+                                } else("availability" === n || "availabilities" === n || "link" === n) && Pt(i(this).get(0), o)
+                            }
+                        })
+                    }
+
+                    function Zt() {
+                        i("." + u).each(function() {
+                            Xt(this)
+                        })
+                    }
+
+                    function en() {
+                        i("." + p).each(function() {
+                            Yt(this)
+                        })
+                    }
+
+                    function tn(e) {
+                        X.info("GWI.showWidget is now deprecated. Please use GWI.showModal instead. " + D), nn(e)
+                    }
+
+                    function nn(e) {
+                        var t, n, o = i.extend({}, Rt, i.isPlainObject(e) ? e : nt(e) ? i(e).data() : null);
+                        o.trigger = "modal", o.render = "modal", t = [o], o = Vt(o), o = Qt(o), Kt(o, !0) && (o.modality || (o.modality = tt(o)), o.blowup === !0 || o.animate === !0 ? n = e : (n = o.blowup || o.animate, nt(n) || (n = null)), n && t.push({
+                            animate: {
+                                rect: n.getBoundingClientRect()
+                            }
+                        }), jt.show.apply(null, t), b(e))
+                    }
+
+                    function on() {
+                        X.debug("Setting config: ", Rt), Rt.autoEmbed && (X.debug("auto-embedding widgets"), $t())
+                    }
+
+                    function rn(e, t) {
+                        var n = zt.getAlertPixels(e),
+                            i = zt.getCombinedPixelText(n),
+                            o = {
+                                campaign: cn(e)
+                            },
+                            r = ln(i, t, o);
+                        lt("body", r)
+                    }
+
+                    function an(e, t) {
+                        var n = zt.getImpressionPixels(e),
+                            i = zt.getCombinedPixelText(n),
+                            o = {
+                                campaign: cn(e)
+                            },
+                            r = ln(i, t, o);
+                        lt("body", r)
+                    }
+
+                    function sn(e, t, n) {
+                        var i = zt.getProviderPixels(e, n.id),
+                            o = zt.getCombinedPixelText(i),
+                            r = {
+                                campaign: cn(e),
+                                providerFormat: n
+                            },
+                            a = ln(o, t, r);
+                        lt("body", a)
+                    }
+
+                    function cn(e) {
+                        var t = n(Rt.originURL) || {};
+                        return t.gwi_campaign || t.gwiCampaign || e.assetCampaign || e.campaign || Rt.campaign
+                    }
+
+                    function ln(e, t, n) {
+                        var i, o, r, a, s, c, l = Math.floor(0xffffffffffff * Math.random()).toString(16),
+                            d = t.type;
+                        return n && (c = n.providerFormat, s = n.campaign), "movie" === d ? i = t : "show" === d ? o = t : "season" === d ? (o = t.show, r = t) : "episode" === d && (o = t.show, r = t.season, a = t), e = e.replace(/%%CACHEBUSTER%%/g, l), e = e.replace(/%%CAMPAIGN%%/g, s ? s : ""), e = e.replace(/%%WATCHABLE_TYPE%%/g, d), e = e.replace(/%%WATCHABLE_ID%%/g, t.id), e = e.replace(/%%TITLE%%/g, t.title), e = e.replace(/%%MOVIE_ID%%/g, i ? i.id : ""), e = e.replace(/%%MOVIE_TITLE%%/g, i ? i.title : ""), e = e.replace(/%%SHOW_ID%%/g, o ? o.id : ""), e = e.replace(/%%SHOW_TITLE%%/g, o ? o.title : ""), e = e.replace(/%%SEASON_ID%%/g, r ? r.id : ""), e = e.replace(/%%SEASON_TITLE%%/g, r ? r.title : ""), e = e.replace(/%%SEASON_NUMBER%%/g, r ? r.number : ""), e = e.replace(/%%EPISODE_ID%%/g, a ? a.id : ""), e = e.replace(/%%EPISODE_TITLE%%/g, a ? a.title : ""), e = e.replace(/%%EPISODE_NUMBER%%/g, a ? a.number : ""), e = e.replace(/%%PROVIDER_FORMAT_NAME%%/g, c ? c.name : ""), e = e.replace(/%%PROVIDER_FORMAT_ID%%/g, c ? c.id : "")
+                    }
+
+                    function dn() {
+                        function o() {
+                            var t = n(Rt.originURL);
+                            if (t && t.gwiScroll) {
+                                var o = i("." + f).first();
+                                if (o.length > 0) {
+                                    var r = o.offset();
+                                    e.scrollTo(r.left, r.top - 300)
+                                }
+                            }
+                        }
+
+                        function c() {
+                            var e = n(Rt.originURL);
+                            if (e && e.gwiAutoOpen) {
+                                var t = i("." + u).map(function() {
+                                        var e = i(this).data().render;
+                                        return e && -1 !== e.indexOf("button") ? this : void 0
+                                    }),
+                                    o = t.first();
+                                if (o.length > 0) {
+                                    var r = i(o).data();
+                                    nn(r)
+                                }
+                            }
+                        }
+                        X.debug("parsing config"), on(), Zt(), en(), Bt.receive("frame-loaded frame-resize", function(e, t, n) {
+                            var o = function() {
+                                var e;
+                                return e = "microsite" == i("#" + n).data().flavor ? s() ? document.documentElement.clientHeight : "auto" : t.widgetHeight
+                            }();
+                            t.widgetHeight > 0 && (wt(n), bt(n), i("." + f).css("height", "auto"), yt(n, o))
+                        }), Bt.receive("frame-close-modal-popup", function() {
+                            jt.remove()
+                        }), Bt.receive("frame-open-widget-modal", function(e, t, n) {
+                            var o = t.widgetConfig;
+                            o.animate = i("#" + n).get(0), o.forceImpression = !0, nn(o)
+                        }), Bt.receive("frame-open-registration-modal", function(e, t, n) {
+                            var o = t.widgetConfig;
+                            o.redirectRoute = "registration", o.flavor = "alert", o.animate = i("#" + n).get(0), nn(o)
+                        }), Bt.receive("frame-open-sign-in-modal", function(e, t, n) {
+                            var o = t.widgetConfig;
+                            o.redirectRoute = "sign-in", o.flavor = "alert", o.animate = i("#" + n).get(0), nn(o)
+                        }), Bt.receive("frame-close-window", function() {
+                            window.close()
+                        }), Bt.receive("signin-state-change", function(e, t, n) {
+                            Jt(), Bt.dispatch(n, e, {
+                                state: t.state
+                            })
+                        }), Bt.receive("alert-complete alert-reset", function(e, t, n) {
+                            Jt();
+                            var o = i("#" + n);
+                            rn(o.data(), t.watchable), Bt.dispatch(n, e)
+                        }), Bt.receive("provider-clicked", function(e, t, n) {
+                            var o = i("#" + n);
+                            sn(o.data(), t.watchable, t.providerFormat)
+                        }), Bt.receive("impression-event", function(e, t, n) {
+                            var o = i("#" + n);
+                            an(o.data(), t.watchable)
+                        }), Bt.receive("route-updated", function(e, t) {
+                            window.location.hash = t.type
+                        }), Bt.receive("frame-tune-in-cable-listing-updated", function(e, t, n) {
+                            Bt.dispatch(n, e)
+                        }), Bt.receive("frame-tune-in-zipcode-updated", function(e, t, n) {
+                            Bt.dispatch(n, e)
+                        }), Bt.receive("send-tracking-event", function(e, t) {
+                            kt("send", t.event, t.options)
+                        }), Bt.receive("send-tracking-update", function(e, t) {
+                            kt("update", t.options)
+                        }), Bt.receive("avails-callback", function(t, n) {
+                            e.goWatchItAvailabilitiesCallback && "function" == typeof e.goWatchItAvailabilitiesCallback && e.goWatchItAvailabilitiesCallback(n.hasAvailabilities)
+                        }), i(window).scroll(function() {
+                            for (var e in At) Bt.send(e, "scroll-change", {
+                                viewportScrollTop: i(window).scrollTop()
+                            })
+                        }), e.GWI = {
+                            DOM: {
+                                addListener: r,
+                                removeListener: a,
+                                setAttributes: st,
+                                setStyle: at,
+                                getDocumentSize: rt,
+                                getWindowSize: ot,
+                                getScrollOffset: it
+                            },
+                            triggerProviderConversionPixel: sn,
+                            triggerAlertConversionPixel: rn,
+                            setConfig: on,
+                            injectWidgetByLink: $t,
+                            showWidget: tn,
+                            injectWidget: t,
+                            showButton: Ct,
+                            showModal: nn,
+                            display: Xt,
+                            displayBranding: Yt
+                        }, o(), c(), e.goWatchItReady && "function" == typeof e.goWatchItReady && e.goWatchItReady()
+                    }
+                    X.debug("availability check: allowed"), St(Rt), Tt(Rt), dn(), O(Rt.theme || "default")
+                }, function() {
+                    X.warn("Availability check: not allowed")
+                })
+            })
+        }(jQuery)
+    }
+
+    var d = "gwijslib",
+        u = "gwi-widget",
+        p = "gwi-branding",
+        f = "gwi-iframe-holder",
+        // JW: v used to be the Logo. Removed it.
+        v = '<span></span>',
+        h = '<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 15.904 15.904" enable-background="new 0 0 15.904 15.904" xml:space="preserve"><path class="fill" d="M7.952,0C3.56,0,0,3.56,0,7.952c0,4.392,3.56,7.952,7.952,7.952c4.392,0,7.952-3.56,7.952-7.952 C15.904,3.56,12.344,0,7.952,0z M12.289,11.25H3.615V6.565L7.98,8.356l4.309-1.791V11.25z M12.289,5.533L7.924,7.324L3.615,5.533 V4.654h8.675V5.533z"/></svg>',
+        g = '<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path d="M320,64H192V32h128V64z M512,96v352c0,35.344-28.656,64-64,64H64c-35.344,0-64-28.656-64-64V96c0-35.344,28.656-64,64-64v32c-17.641,0-32,14.375-32,32v64h448V96c0-17.625-14.344-32-32-32V32C483.344,32,512,60.656,512,96z M128,400H32v48c0,17.656,14.359,32,32,32h64V400z M128,304H32v64h96V304z M128,192H32v80h96V192z M240,400h-80v80h80V400z M240,304h-80v64h80V304zM240,192h-80v80h80V192z M352,400h-80v80h80V400z M352,304h-80v64h80V304z M352,192h-80v80h80V192z M480,400h-96v80h64c17.656,0,32-14.344,32-32V400z M480,304h-96v64h96V304z M480,192h-96v80h96V192z M112,96h32c8.844,0,16-7.156,16-16V16c0-8.844-7.156-16-16-16h-32c-8.844,0-16,7.156-16,16v64C96,88.844,103.156,96,112,96z M368,96h32c8.844,0,16-7.156,16-16V16c0-8.844-7.156-16-16-16h-32c-8.844,0-16,7.156-16,16v64C352,88.844,359.156,96,368,96z"/></svg>',
+        m = /gowatchit.com\/(movie|show|episode)s\/([1-9]\d*)+(?:[?#/]|$)/,
+        b = !1,
+        w = "https://superwidget.gowatchit.com/superwidget",
+        y = "https://superwidget-assets.gowatchit.com",
+        x = "production",
+        C = 105249,
+        I = "c64d59283671d8d697783fd4d1eaab4c",
+        E = "https://static-assets.gowatchit.com",
+        k = "https://static-assets.gowatchit.com",
+        P = "/api/v3/service/allowed_region",
+        _ = "/api/v3/search/",
+        T = "watchit-",
+        S = "function" == typeof e.postMessage || "object" == typeof e.postMessage,
+        O = 500,
+        W = 767,
+        M = 800,
+        A = "btn-gwi",
+        R = !1,
+        D = "Go to https://gowatchit.com/sdk/docs for more information.",
+        L = ["movie", "show", "season", "episode", "list"],
+        B = ["availability", "availabilities", "alert", "link", "quick-alert", "tune-in", "trailer", "microsite", "calendar", "mini", "directv", "list", "microsite_v2"],
+        j = LINK_RENDERS = ["button", "inline", "combined"],
+        H = ["simple-button", "power-button", "inline", "combined"],
+        z = ["inline"],
+        U = ["inline"],
+        N = ["inline"],
+        G = ["inline", "button"],
+        F = ["inline"],
+        V = ["inline"],
+        q = ["inline"],
+        K = ["inline"],
+        Q = ["latest-available"],
+        J = ["youtube", "other"],
+        Y = {
+            "default": "themes/default.button-23431ff42004371ded38e770396ecba2.css",
+            mpaa: "themes/mpaa.button-81031f07425ee4f3034af4460ddb45c2.css",
+            decider: "themes/decider.button-00cf4422d7e26452d5913b471a97a6b9.css",
+            thecredits: "themes/thecredits.button.css",
+            furious: "themes/furious.button-dadb0d6ae526e7271636816df5c4e349.css",
+            ifc_blue: "themes/ifc_blue.button-bf639a86cd41d64697006dfddccfe408.css",
+            ifc_green: "themes/ifc_green.button-7314e64e376e0081d4a331d98d6eb9aa.css",
+            ifc_gold: "themes/ifc_gold.button-0e532741a2626323b7fa9fde873aca1a.css",
+            ifc_crimson: "themes/ifc_crimson.button-91a985931d61c4e331f6fa9d4c8cd6d4.css",
+            jfi: "themes/jfi.button-b244ae651b339f7b409374578708ec56.css",
+            buzzfeed_blue: "themes/buzzfeed_blue.button-0d905f70a8f6722ba4a66edb45673045.css",
+            ew: "themes/ew.button-0c143e0fb73df3973b13123dfd8e2cb9.css",
+            sundance: "themes/sundance.button-3f305bdb35f90850cb896bc82530b636.css",
+            sisters: "themes/sisters.button-add46f2110008e5f992b36b50e85315b.css",
+            marvista_scarlet: "themes/marvista_scarlet.button-360b41c04c50955ae4a458e95b31dea6.css"
+        };
+    window.console || (window.console = {}), window.console.log || (window.console.log = function() {}), window.console.error || (window.console.error = function() {}), window.console.dir || (window.console.dir = function() {});
+    var X = function() {
+            function t(t, i) {
+                var o = console && console[t] && "function" == typeof console[t];
+                return o ? function() {
+                    var o = [].slice.call(arguments),
+                        r = n(e.location.href) || {},
+                        a = b || r.gwi_debug;
+                    o.unshift("[GWI]:"), (!i || a) && console[t].apply(console, o)
+                } : function() {}
+            }
+            return {
+                error: t("error"),
+                warn: t("warn"),
+                info: t("log"),
+                debug: t("log", !0),
+                dump: t("dir")
+            }
+        }(),
+        $ = {
+            BASE_URL: "https://airbrake.io/api/v3/projects/" + C,
+            recordError: function(e, t, n) {
+                var o = this.BASE_URL + "/notices?key=" + I,
+                    r = {
+                        errors: [this.createError(e, t)],
+                        context: this.createContext(n)
+                    };
+                i(o, r)
+            },
+            createError: function(e, t) {
+                return {
+                    type: e,
+                    message: t + " at " + window.location.href
+                }
+            },
+            createContext: function(t) {
+                return t || (t = {}), t.user_agent = e.navigator && e.navigator.userAgent, t.url = e.location.href, t.environment = x, t
+            }
+        };
+    ! function Z() {
+        if ("loading" === t.readyState) return e.setTimeout(Z, 50);
+        if ("function" == typeof e.jQuery && "string" == typeof e.jQuery().jquery) X.debug("jQuery was found."), c();
+        else {
+            var n = t.createElement("script");
+            n.type = "text/javascript", n.src = "//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js", r(n, "load", function() {
+                jQuery.noConflict(), c()
+            });
+            var i = t.getElementsByTagName("script")[0];
+            i.parentNode.insertBefore(n, i), X.debug("jQuery not found. Loading jQuery 1.11.1...")
+        }
+    }()
+}(window, document);
