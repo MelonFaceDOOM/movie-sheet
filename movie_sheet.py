@@ -59,6 +59,8 @@ def reup_auth(func):
 ##################################################
 
 def add_movie(sheet, movie, chooser):
+    if movie.strip() == "":
+        raise ValueError("movie name cannot be blank")
     if find_exact_movie(sheet, movie):
         raise ValueError("movie already exists")
     row = [movie, chooser]
@@ -106,6 +108,8 @@ def add_reviewer(reviewer):
     if find_reviewer(reviewer):
         raise ValueError("reviewer already exists")
     col = len(ws_ratings.row_values(HEADER_ROWS_RATINGS)) + 1
+    if col > ws_ratings.col_count:
+        ws_ratings.add_cols(col - ws_ratings.col_count)
     ws_ratings.update_cell(HEADER_ROWS_RATINGS, col, reviewer)
     return col 
     
@@ -195,15 +199,21 @@ def transfer_movie(movie, new_chooser):
     raise ValueError(f'Could not transfer choosership because "{movie}" was not found.')
     
 @reup_auth
-def find_all_movies(movie):
+def find_all(search_term):
+    if search_term.strip() == "":
+        raise ValueError("search term cannot be blank")
     future_movies = ws_future_movies.col_values(MOVIE_COL_FUTURE)[HEADER_ROWS_FUTURE:]
     future_movies = [movie.lower() for movie in future_movies]
     ratings_movies = ws_ratings.col_values(MOVIE_COL_RATINGS)[HEADER_ROWS_RATINGS:]
     ratings_movies = [movie.lower() for movie in ratings_movies]
-    best_match = find_closest_match(movie, future_movies+ratings_movies)
+    usernames = ws_users.col_values(NICK_COL_USERS)[HEADER_ROWS_USERS:]
+    usernames = [username.lower() for username in usernames]
+    
+    full_search_list = future_movies + ratings_movies + usernames
+    best_match = find_closest_match(search_term, full_search_list)
     
     if not best_match:
-        raise ValueError(f'"{movie}" was not found.')
+        raise ValueError(f'"{search_term}" was not found.')
         
     if best_match in future_movies:
         index = future_movies.index(best_match.lower()) + HEADER_ROWS_FUTURE + 1
@@ -228,8 +238,39 @@ def find_all_movies(movie):
                 score = '{:02.1f}'.format(float(score))
                 message+=(f"{reviewers[i]}: {score}\n")
         return message
+        
+    if best_match in usernames:
+        message = f'------ {best_match.upper()} ------\n'
+        chooser_rows = find_chooser_rows(best_match)
+        if len(chooser_rows) == 0:
+            message += f"None of {best_match.upper()}'s suggestions have been watched yet.\n"
+        else:
+            message += f"{len(chooser_rows)} of {best_match.upper()}'s suggestions {'have' if len(chooser_rows)>1 else 'has'} been watched so far.\n"
+            average_score = average_ignore_blank([average_ignore_blank(r[INFO_COLUMNS_RATINGS:]) for r in chooser_rows])
+            average_score = '{:02.1f}'.format(float(average_score))
+            message += f'{best_match.upper()} receives an average score of {average_score}.\n'
+            
+        col = find_reviewer(best_match)
+        if not col:
+            message += f'{best_match.upper()} has not rated any movies.\n'
+        else:
+            scores = ws_ratings.col_values(col)[HEADER_ROWS_RATINGS:]
+            average = average_ignore_blank(scores)
+            average = '{:02.1f}'.format(float(average))
+            n_scores = len([score for score in scores if score != ''])
+            message += f'{best_match.upper()} has given {n_scores} rating{"s" if n_scores>1 else ""}, with an average of {average}.\n'
+            
+        future_movies = ws_future_movies.get_all_values()
+        suggestions = [r[MOVIE_COL_FUTURE-1] for r in future_movies if r[CHOOSER_COL_FUTURE-1].lower() == best_match]
+        if not suggestions:
+            message += f'{best_match.upper()} does not currently have any movie suggestions.\n'
+        else:
+            message += f'{best_match.upper()} currently has {len(suggestions)} movie suggestion{"s" if len(suggestions)>1 else ""}.\n\n'
+        
+        message += f'find more info with !chooser {best_match}, !ratings {best_match}, or !suggestions {best_match}.'
+        return message
 
-    raise ValueError(f'Could not find rating because "{movie}" was not found.')
+    raise ValueError(f'Could not find rating because "{search_term}" was not found.')
 
 @reup_auth
 def endorse_movie(movie, endorser):
@@ -242,6 +283,8 @@ def endorse_movie(movie, endorser):
         raise ValueError(f'{endorser} cannot endorse "{movie}" because it is their movie.')
     current_endorsers = movie_row[INFO_COLUMNS_FUTURE:]
     if endorser not in current_endorsers:
+        if len(movie_row)+1 > ws_future_movies.col_count:
+            ws_future_movies.add_cols(1)
         ws_future_movies.update_cell(index, len(movie_row)+1, endorser)
     return None
         
@@ -328,8 +371,13 @@ def top_endorsed(n):
     endorsements = ws_future_movies.get_all_values()[HEADER_ROWS_FUTURE:] # skip header row
     endorsements = [[cell for cell in row if cell] for row in endorsements] # remove all blanks
     endorsements.sort(key=len, reverse=True)
-    message = "------ MOST ENDORSED MOVIES ------\n" 
-    for e in endorsements[:n]:
+    if n > len(endorsements):
+        n = len(endorsements)
+    if n < 0:
+        n = 0
+    endorsements = endorsements[:n]
+    message = "------ MOST ENDORSED MOVIES ------\n"
+    for e in endorsements:
         message += f"{e[MOVIE_COL_FUTURE-1]} ({e[CHOOSER_COL_FUTURE-1]}): {len(e[INFO_COLUMNS_FUTURE:])}\n" 
     return message
     
@@ -343,20 +391,11 @@ def unendorsed():
     for e in endorsements:
         message += f"{e[MOVIE_COL_FUTURE-1]} ({e[CHOOSER_COL_FUTURE-1]})\n" 
     return message
- 
-@reup_auth
-def average_reviewer_rating(reviewer):
-    col = find_reviewer(reviewer)
-    if not col:
-        raise ValueError(f'No ratings from {reviewer} were found.')
-    scores = ws_ratings.col_values(col)[HEADER_ROWS_RATINGS:]
-    average = average_ignore_blank(scores)
-    average = '{:02.1f}'.format(float(average))
-    message = f"{reviewer} gives an average score of {average}."
-    return message
 
 @reup_auth
-def ratings_from_chooser(chooser):
+def ratings_for_chooser(chooser):
+    if chooser.strip() == "":
+        raise ValueError("chooser cannot be blank")
     chooser_rows = find_chooser_rows(chooser)
     if not chooser_rows:
         raise ValueError(f'No watched movies were found for the chooser, {chooser}.')
@@ -430,6 +469,10 @@ def top_ratings(n):
         average = average_ignore_blank(scores)
         average_ratings.append([movie_row[0], movie_row[1], average])
     average_ratings.sort(key=lambda x: float(x[2]), reverse=True)
+    if n > len(average_ratings):
+        n = len(average_ratings)
+    if n < 0:
+        n = 0
     average_ratings = average_ratings[:n]
     message = f"------ TOP RATED MOVIES ------\n"
     i = 1

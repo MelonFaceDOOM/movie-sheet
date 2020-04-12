@@ -10,8 +10,21 @@ import os
 def chunk(message, max_length=1900):
     chunks = []
     while message:
-        chunks.append(message[:max_length])
-        message = message[max_length:]
+        chunk = ""
+        newline_pos = None
+        while (len(chunk) <= max_length) and message:
+            character = message[0]
+            message = message[1:]
+            chunk += character
+            
+            if character == "\n":
+                newline_pos = len(chunk)
+        if newline_pos:
+            extra = chunk[newline_pos:]
+            message = extra + message
+            chunk = chunk[:newline_pos-1]
+            
+        chunks.append(chunk)
     return chunks
     
     
@@ -71,7 +84,7 @@ class Core(commands.Cog):
         """Find movie that has been suggested or watched."""
         movie = " ".join(movie)
         try:
-            message = movie_sheet.find_all_movies(movie)
+            message = movie_sheet.find_all(movie)
         except ValueError as e:
             return await ctx.send(e)
         return await ctx.send("```"+message+"```")
@@ -187,7 +200,7 @@ class IndividualAnalytics(commands.Cog):
             except ValueError as e:
                 return await ctx.send(e)
         try:
-            messages = chunk(movie_sheet.ratings_from_chooser(nick))
+            messages = chunk(movie_sheet.ratings_for_chooser(nick))
         except ValueError as e:
             return await ctx.send(e)
         for message in messages:
@@ -197,6 +210,12 @@ class IndividualAnalytics(commands.Cog):
     async def ratings(self, ctx, *nick):
         """Return ratings from a reviewer."""
         nick = " ".join(nick)
+        if not nick:
+            id = str(ctx.message.author.id)
+            try:
+                nick = movie_sheet.get_nick(id)
+            except ValueError as e:
+                return await ctx.send(e)
         try:
             messages = chunk(movie_sheet.ratings_from_reviewer(nick))
         except ValueError as e:
@@ -219,19 +238,30 @@ class GroupAnalytics(commands.Cog):
     @commands.command()
     async def recent(self, ctx, n=10):
         """Return most recently-suggested future movies."""
-        message = movie_sheet.recent_suggestions(n)
-        return await ctx.send("```"+message+"```")
+        try:
+            messages = chunk(movie_sheet.recent_suggestions(n))
+        except ValueError as e:
+            return await ctx.send(e)
+        for message in messages:
+            await ctx.send("```"+message+"```")
         
     @commands.command()
     async def top_endorsed(self, ctx, n=5):
         """Return most-endorsed movies."""
-        message = movie_sheet.top_endorsed(n)
-        return await ctx.send("```"+message+"```")
+        try:
+            messages = chunk(movie_sheet.top_endorsed(n))
+        except ValueError as e:
+            return await ctx.send(e)
+        for message in messages:
+            await ctx.send("```"+message+"```")
     
     @commands.command()
     async def unendorsed(self, ctx):
         """Return unendorsed movies."""
-        messages = chunk(movie_sheet.unendorsed())
+        try:
+            messages = chunk(movie_sheet.unendorsed())
+        except ValueError as e:
+            return await ctx.send(e)
         for message in messages:
             await ctx.send("```"+message+"```")
 
@@ -244,9 +274,13 @@ class GroupAnalytics(commands.Cog):
     @commands.command()
     async def top_rated(self, ctx, n=10):
         """Return the top-rated movies."""
-        message = movie_sheet.top_ratings(n)
-        return await ctx.send("```"+message+"```")
-
+        try:
+            messages = chunk(movie_sheet.top_ratings(n))
+        except ValueError as e:
+            return await ctx.send(e)
+        for message in messages:
+            await ctx.send("```"+message+"```")
+        
 class Research(commands.Cog):
     @commands.command()
     async def random(self, ctx):
