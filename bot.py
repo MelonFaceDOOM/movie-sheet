@@ -547,60 +547,7 @@ class Scheduling(commands.Cog):
                   "?event unvote [event_name: ]start_time[ - end_time]```"
         await ctx.send(message)
 
-    async def event_test(self, ctx):
-        event_title = "this is a test2"
-        try:
-            sb.create_event(event_title)
-        except:
-            pass  # already exists
-
-        event = sb.build_event(event_title)
-        time_sets = []
-
-        # participant one: ensure overlapping time
-        time_set = []
-        start = datetime.datetime.strptime('2020-06-29 12:00', "%Y-%m-%d %H:%M")
-        end = datetime.datetime.strptime('2020-06-29 14:00', "%Y-%m-%d %H:%M")
-        time_set.append([start, end])
-        start = datetime.datetime.strptime('2020-06-29 15:00', "%Y-%m-%d %H:%M")
-        end = datetime.datetime.strptime('2020-06-29 17:00', "%Y-%m-%d %H:%M")
-        time_set.append([start, end])
-        start = datetime.datetime.strptime('2020-06-29 13:00', "%Y-%m-%d %H:%M")
-        end = datetime.datetime.strptime('2020-06-29 18:20', "%Y-%m-%d %H:%M")
-        time_set.append([start, end])
-        time_sets.append(time_set)
-
-        # participants two-ten: random times
-        for i in range(1, 10):
-            time_set = []
-            for i in range(random.randint(1, 5)):
-                t1_day = random.randint(28, 30)
-                t1_hour = random.randint(0, 23)
-                t1_minute = random.randint(0,59)
-                t1 = datetime.datetime(2020, 6, t1_day, t1_hour, t1_minute)
-                t2_day = random.randint(28, 30)
-                t2_hour = random.randint(0, 23)
-                t2_minute = random.randint(0, 59)
-                t2 = datetime.datetime(2020, 6, t2_day, t2_hour, t2_minute)
-                time_set.append([min(t1, t2), max(t1, t2)])
-                time_sets.append(time_set)
-
-        for i in range(10):
-            id = 100+i
-            nick = "test_person " + str(id)
-            try:
-                sb.register(id, nick)
-            except:
-                pass  # already registered
-            participant = event.add_participant(nick)
-
-            for start, end in time_sets[i]:
-                participant.add_availability(start, end)
-        sb.update_event(event)
-        await self.event_summary(ctx, [event_title])
-        
-
-bot = commands.Bot(command_prefix=commands.when_mentioned_or("?"), description='ur fav movienight companion.\n!register <nick> to get started!!!')
+bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"), description='ur fav movienight companion.\n!register <nick> to get started!!!')
 
 @bot.event
 async def on_ready():

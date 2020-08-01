@@ -1,0 +1,11 @@
+make changes and test here.
+change call symbol to ! in bot.py
+git add.
+git commit -m
+git push origin master
+log into ubuntu-melly vm
+docker-machine ssh melly
+cd movie-sheet
+git pull origin master
+source venv/bin/activate
+nohup python bot.py &
