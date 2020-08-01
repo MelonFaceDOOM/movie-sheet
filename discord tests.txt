@@ -1,0 +1,72 @@
+delete melonbot.db
+python "migrate sheets to sqlite.py"
+?sheet
+?register melon
+?register melon # ??
+?register jand
+?register cantaloupe # this might not work, but it actually should
+?add fkjasdbklsdglkb
+?add audition
+?add cyborg
+?remove slkslslsl
+?remove fkjasdbklsdglkb
+?transfer "forbidden planet" jand # should work; i own this movie
+?transfer "i saw the devil" jand # should not work; i don't own
+?transfer "asdasda" jand # movie shouldn't exist
+?transfer "land of the dead" fkjaskfjabskas # username shouldn't exist
+?find strangers
+?find jacob
+?find dyst
+?find aieurhtgaeug444
+?endorse evil dead 2
+?endorse evil dead 2
+?endorse alien
+?endorse adrygserges
+?rate batman 10
+?rate scream 10
+?rate adrygserges 10
+?unrate batman
+?unrate doom
+?unrate adrygserges
+?suggestions ash
+?suggestions dyst
+?suggestions kasjgkj
+?chooser ash
+?chooser dyst
+?chooser kasjgkj
+?ratings ash
+?ratings dyst
+?ratings kasjgkj
+?unrated ash
+?unrated dyst
+?unrated ikugbsledkgb
+?unrated
+?top_endorsed
+?top_endorsed 5
+?top_endorsed 0
+?top_endorsed 1000000
+?top_endorsed -10
+?unendorsed ash
+?unendorsed dyst
+?unendorsed ikugbsledkgb
+?unendorsed
+?standings
+?random
+
+?event create test1
+?event create test2
+?event create test3
+?event delete test3
+?event ready monday
+?event ready tuesday 5
+?event ready today
+?event vote tomorrow
+?event summary
+
+event ready
+
+event unready
+
+event vote
+
+event unvote

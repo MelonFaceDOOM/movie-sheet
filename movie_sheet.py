@@ -3,6 +3,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 from gspread.exceptions import APIError
 import random
 from matching import find_closest_match
+import string
 
 
 HEADER_ROWS_FUTURE = 1
@@ -16,7 +17,7 @@ CHOOSER_COL_RATINGS = 2
 ID_COL_USERS = 1
 NICK_COL_USERS = 2
 HEADER_ROWS_USERS = 1
-
+STATIC_SHEETS = ['future_movies', 'ratings', 'users']
 
 ##################################################
 ## GOOGLE SHEET AUTHORIZATION
@@ -26,6 +27,7 @@ def authorize():
     global ws_future_movies
     global ws_ratings
     global ws_users
+    global gsheet
     
     scope = ['https://spreadsheets.google.com/feeds',
              'https://www.googleapis.com/auth/drive']
@@ -141,9 +143,11 @@ def average_ignore_blank(str_list):
         return float('nan')
     return total/count  
     
+    
 ##################################################
 ## FUNCTIONS MEANT TO BE CALLED BY DISCORD BOT
 ##################################################    
+
 @reup_auth
 def register(id, nick):
     if len(nick) < 2:
@@ -347,7 +351,7 @@ def chooser_suggestions(chooser):
     movies = [r[MOVIE_COL_FUTURE-1] for r in future_movies if r[CHOOSER_COL_FUTURE-1].lower() == chooser.lower()]
     if not movies:
         raise ValueError(f'No suggestions found for {chooser}')
-    message = f"------ SUGGESTSIONS FROM {chooser.upper()}------\n"
+    message = f"------ SUGGESTSIONS FROM {chooser.upper()} ------\n"
     for m in movies:
         message += m + "\n"
     return message
@@ -382,14 +386,21 @@ def top_endorsed(n):
     return message
     
 @reup_auth
-def unendorsed():
+def unendorsed(chooser=None):
     """return movies with no endorsements"""
     endorsements = ws_future_movies.get_all_values()[HEADER_ROWS_FUTURE:] # skip header row
     endorsements = [[cell for cell in row if cell] for row in endorsements] # remove all blanks
     endorsements = [row for row in endorsements if len(row)<=(INFO_COLUMNS_FUTURE)]
-    message = "------ UNENDORSED MOVIES ------\n" 
-    for e in endorsements:
-        message += f"{e[MOVIE_COL_FUTURE-1]} ({e[CHOOSER_COL_FUTURE-1]})\n" 
+    if chooser:
+        endorsements = [row for row in endorsements if row[CHOOSER_COL_FUTURE-1].lower()==chooser.lower()]
+        message = f"------ UNENDORSED MOVIES FROM {chooser.upper()} ------\n" 
+        for e in endorsements:
+            message += f"{e[MOVIE_COL_FUTURE-1]}\n" 
+
+    else:
+        message = "------ UNENDORSED MOVIES ------\n" 
+        for e in endorsements:
+            message += f"{e[MOVIE_COL_FUTURE-1]} ({e[CHOOSER_COL_FUTURE-1]})\n" 
     return message
 
 @reup_auth
@@ -486,3 +497,109 @@ def top_ratings(n):
 def pick_random_movie():
     movies = ws_future_movies.col_values(MOVIE_COL_FUTURE)[HEADER_ROWS_FUTURE:]
     return random.choice(movies)
+    
+
+##################################################
+## FUNCS TO FACILITATE EVENT SCHEDULING
+##################################################
+
+@reup_auth
+def find_table(table_name):
+    if len(gsheet.worksheets()) == len(STATIC_SHEETS):
+        return None
+    try:
+        index = [sheet.title for sheet in gsheet.worksheets()].index(table_name)
+        return gsheet.worksheets()[index]
+    except ValueError:
+        return None
+
+@reup_auth
+def most_recent_table():
+    if len(gsheet.worksheets()) == len(STATIC_SHEETS):
+        return None
+    return gsheet.worksheets()[-1].title
+
+@reup_auth
+def create_table(table_name, rows=1000, cols=4):
+    if len(table_name) > 50:
+        raise ValueError('table name cannot exceed 50 characters.')
+    if find_table(table_name):
+        raise ValueError(f'The name "{table_name}" is already in use.')
+        
+    new_sheet = gsheet.add_worksheet(title=table_name, rows=rows, cols=cols)
+    return new_sheet
+
+@reup_auth
+def duplicate_table(table_name):
+    table = find_table(table_name)
+    if not table:
+        raise ValueError(f'A sheet with name "{table_name}" could not be found.')
+    index = len(gsheet.worksheets())
+    retries = 0
+    while retries < 10: 
+        letters = string.ascii_lowercase
+        sheetname = ''.join(random.choice(letters) for i in range(10))
+        try:
+            new_table = table.duplicate(insert_sheet_index=index, new_sheet_name=sheetname)
+            break
+        except:
+            retries += 1
+    return new_table
+
+@reup_auth
+def delete_table(table_name):
+    table = find_table(table_name)
+    if not table:
+        raise ValueError(f'A sheet with name "{table_name}" could not be found.')
+    gsheet.del_worksheet(table)
+    return None
+
+@reup_auth
+def add_row(table_name, values):
+    table = find_table(table_name)
+    if not table:
+        raise ValueError(f'could not find a sheet named "{table_name}".')
+    index = len(table.get_all_values()) + 1
+    table.insert_row(values, index)
+    return None
+
+@reup_auth
+def find_rows(table_name, filter_columns=[], criteria=[]):
+    """returns results in two lists: first has row numbers, second has values."""
+    if len(filter_columns) != len(criteria) or type(filter_columns) != list or type(criteria) != list:
+        raise ValueError('filter_columns and criteria must be lists of equal length')
+    table = find_table(table_name)
+    if not table:
+        raise ValueError(f'A sheet with name "{table_name}" could not be found.')
+    values = table.get_all_values()
+    headers = [value.lower() for value in values[0]]
+    filter_indices = []
+    for col in filter_columns:
+        try:
+            filter_indices.append(headers.index(col.lower()))
+        except ValueError:
+            raise ValueError(f'the column {col} could not be found')
+    result_rows = []
+    result_row_indices = []
+    row_index=2 # row 1 (i.e. header row) is skipped
+    for row in values[1:]:
+        i = 0
+        for filter_index in filter_indices:
+            if row[filter_index] != criteria[i]:
+                break
+            i += 1
+        else:
+            result_row_indices.append(row_index)
+            result_rows.append(row)
+        row_index += 1
+    return (result_row_indices, result_rows)
+
+@reup_auth
+def remove_rows(table_name, filter_columns=[], criteria=[]):
+    rows = find_rows(table_name, filter_columns, criteria)
+    if rows:
+        table = find_table(table_name)
+        # reverse removes the issue of indices changing as rows are removed
+        for index in reversed(rows[0]):
+            table.delete_row(index)
+    return None

@@ -1,0 +1,18 @@
+Brainstorming Requried testing for scheduling module:
+
+- add several test participants
+- add availability for each in a variety of time formats
+- unready
+- look at summary
+- look at summary when everything is empty
+- add in some votes
+- unvote
+- recheck summary
+- test with multiple events
+
+summary needs to show votes as separate from ready
+might be good to build a new func, maybe in Participant, that will help with identifying if:
+	the participant is available at a given time
+	the participant has voted for a given time
+	
+	
