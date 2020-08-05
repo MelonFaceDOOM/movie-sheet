@@ -586,6 +586,7 @@ class movieNightBot:
         overall_average = sum(all_ratings_from_rater)/len(all_ratings_from_rater)
         overall_average = '{:02.1f}'.format(overall_average)
         message = f"------ RATINGS FROM {rater_name.upper()} (avg: {overall_average})------\n"
+        rows = sorted(rows, key = lambda row: row['rating'], reverse=True) 
         for row in rows:
             rating = '{:02.1f}'.format(row['rating'])
             message += f"{row['movie_title']} - {rating}\n"
@@ -653,7 +654,7 @@ class movieNightBot:
                 chooser = "???"
             else:
                 chooser = chooser['name']
-            ratings_for_movie = [row['rating'] for row in movies_and_ratings if row['movie'] == movie]
+            ratings_for_movie = [row['rating'] for row in movies_and_ratings if row['movie_title'] == movie]
             movie_average_rating = sum(ratings_for_movie)/len(ratings_for_movie)
             movie_chooser_rating.append([movie, chooser, movie_average_rating])
 

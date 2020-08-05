@@ -8,4 +8,5 @@ docker-machine ssh melly
 cd movie-sheet
 git pull origin master
 source venv/bin/activate
+pip install -r requirements.txt
 nohup python bot.py &
