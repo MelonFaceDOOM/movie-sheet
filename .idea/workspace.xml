@@ -2,7 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5877a44c-0038-4b00-a7ba-ef2d397d9c5e" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/movienight_bot.py" beforeDir="false" afterPath="$PROJECT_DIR$/movienight_bot.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/update procedure.txt" beforeDir="false" afterPath="$PROJECT_DIR$/update procedure.txt" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -12,7 +16,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.42802548">
+    <splitter split-orientation="horizontal" split-proportion="0.42422503">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file pinned="false" current-in-tab="false">
@@ -44,8 +48,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/bot.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="588">
-                  <caret line="549" column="63" selection-start-line="549" selection-start-column="63" selection-end-line="549" selection-end-column="63" />
+                <state relative-caret-position="802">
+                  <caret line="562" selection-start-line="562" selection-end-line="562" />
                   <folding>
                     <element signature="e#0#39#0" expanded="true" />
                   </folding>
@@ -81,11 +85,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/scheduling_bot.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="425">
-                  <caret line="25" column="39" lean-forward="true" selection-start-line="25" selection-start-column="39" selection-end-line="25" selection-end-column="39" />
+                <state relative-caret-position="612">
+                  <caret line="36" column="21" selection-start-line="36" selection-start-column="21" selection-end-line="36" selection-end-column="21" />
                   <folding>
                     <element signature="e#0#13#0" expanded="true" />
                   </folding>
@@ -105,11 +109,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/movienight_bot.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-3645">
-                  <caret line="412" column="35" selection-start-line="412" selection-start-column="35" selection-end-line="412" selection-end-column="35" />
+                <state relative-caret-position="669">
+                  <caret line="530" column="23" lean-forward="true" selection-start-line="530" selection-start-column="23" selection-end-line="530" selection-end-column="23" />
                   <folding>
                     <element signature="e#0#13#0" expanded="true" />
                   </folding>
@@ -148,6 +152,7 @@
       <find>select from</find>
       <find>delete</find>
       <find>summary</find>
+      <find>movie_title</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -160,10 +165,10 @@
         <option value="$PROJECT_DIR$/scheduling_bot.py" />
         <option value="$PROJECT_DIR$/melon_scheduling.py" />
         <option value="$PROJECT_DIR$/migrate sheets to sqlite.py" />
-        <option value="$PROJECT_DIR$/movienight_bot.py" />
         <option value="$PROJECT_DIR$/scraping/rotten_tomatoes.py" />
         <option value="$PROJECT_DIR$/movie_sheet.py" />
         <option value="$PROJECT_DIR$/bot.py" />
+        <option value="$PROJECT_DIR$/movienight_bot.py" />
       </list>
     </option>
   </component>
@@ -181,7 +186,7 @@
   <component name="ProjectFrameBounds">
     <option name="x" value="1437" />
     <option name="width" value="1993" />
-    <option name="height" value="1407" />
+    <option name="height" value="1400" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -248,7 +253,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="1437" y="0" width="1993" height="1407" extended-state="0" />
+    <frame x="1437" y="0" width="1993" height="1400" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.108951405" />
@@ -262,7 +267,7 @@
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.32967034" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="8" sideWeight="0.49859786" visible="true" weight="0.23626374" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="8" sideWeight="0.49859786" visible="true" weight="0.23756906" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50140214" side_tool="true" weight="0.15227629" />
       <window_info anchor="bottom" id="Python Console" order="10" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -288,16 +293,6 @@
           <caret line="247" column="14" selection-start-line="247" selection-start-column="10" selection-end-line="247" selection-end-column="14" />
           <folding>
             <element signature="e#0#15#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/movienight_bot.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-3645">
-          <caret line="412" column="35" selection-start-line="412" selection-start-column="35" selection-end-line="412" selection-end-column="35" />
-          <folding>
-            <element signature="e#0#13#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -347,20 +342,30 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/scheduling_bot.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="612">
+          <caret line="36" column="21" selection-start-line="36" selection-start-column="21" selection-end-line="36" selection-end-column="21" />
+          <folding>
+            <element signature="e#0#13#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/bot.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="588">
-          <caret line="549" column="63" selection-start-line="549" selection-start-column="63" selection-end-line="549" selection-end-column="63" />
+        <state relative-caret-position="802">
+          <caret line="562" selection-start-line="562" selection-end-line="562" />
           <folding>
             <element signature="e#0#39#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/scheduling_bot.py">
+    <entry file="file://$PROJECT_DIR$/movienight_bot.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="425">
-          <caret line="25" column="39" lean-forward="true" selection-start-line="25" selection-start-column="39" selection-end-line="25" selection-end-column="39" />
+        <state relative-caret-position="669">
+          <caret line="530" column="23" lean-forward="true" selection-start-line="530" selection-start-column="23" selection-end-line="530" selection-end-column="23" />
           <folding>
             <element signature="e#0#13#0" expanded="true" />
           </folding>

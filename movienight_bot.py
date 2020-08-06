@@ -12,22 +12,32 @@ class movieNightBot:
         c = self.conn.cursor()
         c.execute('''CREATE TABLE IF NOT EXISTS users
                      (discord_id INTEGER PRIMARY KEY NOT NULL UNIQUE, name TEXT NOT NULL UNIQUE COLLATE NOCASE,
-                      date DATETIME DEFAULT current_timestamp)''')
+                     date datetime DEFAULT current_timestamp)''')
         c.execute('''CREATE TABLE IF NOT EXISTS movies
-                    (title TEXT PRIMARY KEY NOT NULL UNIQUE COLLATE NOCASE, date DATETIME DEFAULT current_timestamp,
-                     chooser_discord_id INTEGER NOT NULL, watched INTEGER DEFAULT 0,
-                     FOREIGN KEY (chooser_discord_id) REFERENCES users (discord_id))''')
+                    (title TEXT PRIMARY KEY NOT NULL UNIQUE COLLATE NOCASE, date datetime DEFAULT current_timestamp,
+                    chooser_discord_id INTEGER NOT NULL, watched INTEGER DEFAULT 0,
+                    FOREIGN KEY (chooser_discord_id) REFERENCES users (discord_id))''')
         c.execute('''CREATE TABLE IF NOT EXISTS endorsements
-                    (id INTEGER PRIMARY KEY NOT NULL, date DATETIME DEFAULT current_timestamp,
+                    (id INTEGER PRIMARY KEY NOT NULL, date datetime DEFAULT current_timestamp,
                      endorser_discord_id INTEGER NOT NULL, movie_title TEXT NOT NULL COLLATE NOCASE, 
                      FOREIGN KEY (endorser_discord_id) REFERENCES users (discord_id),
                      FOREIGN KEY(movie_title) REFERENCES movies (title))''')
         c.execute('''CREATE TABLE IF NOT EXISTS ratings
-                     (id INTEGER PRIMARY KEY NOT NULL, date DATETIME DEFAULT current_timestamp, 
-                      movie_title TEXT NOT NULL COLLATE NOCASE, rater_discord_id INTEGER NOT NULL,
-                      rating INTEGER NOT NULL, 
-                      FOREIGN KEY (rater_discord_id) REFERENCES users (discord_id),
-                      FOREIGN KEY(movie_title) REFERENCES movies (title))''')
+                     (id INTEGER PRIMARY KEY NOT NULL, date datetime DEFAULT current_timestamp, 
+                     movie_title TEXT NOT NULL COLLATE NOCASE, rater_discord_id INTEGER NOT NULL,
+                     rating INTEGER NOT NULL, 
+                     FOREIGN KEY (rater_discord_id) REFERENCES users (discord_id),
+                     FOREIGN KEY(movie_title) REFERENCES movies (title))''')
+        c.execute('''CREATE TABLE IF NOT EXISTS reviews 
+                     (id INTEGER PRIMARY KEY NOT NULL, date datetime DEFAULT current_timestamp,
+                     movie_title TEXT NOT NULL COLLATE NOCASE, reviewer_discord_id INTEGER NOT NULL,
+                     review_text TEXT NOT NULL,
+                     FOREIGN KEY (reviewer_discord_id) REFERENCES users (discord_id),
+                     FOREIGN KEY(movie_title) REFERENCES movies (title))''')
+        c.execute('''CREATE TABLE IF NOT EXISTS tags 
+                     (id INTEGER PRIMARY KEY NOT NULL, date datetime DEFAULT current_timestamp,
+                     movie_title TEXT NOT NULL COLLATE NOCASE, tag_text TEXT NOT NULL,
+                     FOREIGN KEY(movie_title) REFERENCES movies (title))''')
         self.conn.commit()
 
     def register(self, discord_id, nick):
@@ -367,7 +377,7 @@ class movieNightBot:
                 c.execute('''SELECT movie_title, review_text FROM reviews WHERE reviewer_discord_id = ?''',
                           (reviewer_discord_id,))
                 reviews = c.fetchall()
-                message = f"------ REVIEWS FOR {reviewer_name.upper()} ------\n"
+                message = f"------ REVIEWS FROM {reviewer_name.upper()} ------\n"
                 for review in reviews:
                     rating = self.find_rating_for_movie_and_discord_id(review['movie_title'], reviewer_discord_id)
                     if rating:
@@ -505,11 +515,11 @@ class movieNightBot:
                  ''')
         movies_and_choosers = c.fetchall()
         c.execute('''SELECT movie_title FROM endorsements''')
-        endorsements = c.fetchall() # each movie will be listed once for each endorsement
-        endorsements = [e['movie_title'] for e in endorsements]
+        endorsements = c.fetchall()  # each movie will be listed once for each endorsement
+        endorsements = [e['movie_title'].lower() for e in endorsements]
         movies_chooser_endorsements = []
         for row in movies_and_choosers:
-            movie_endorsements = endorsements.count(row['title'])
+            movie_endorsements = endorsements.count(row['title'].lower())
             movies_chooser_endorsements.append([row['title'], row['name'], movie_endorsements])
         movies_chooser_endorsements.sort(key=lambda x: x[2], reverse=True)
         message = "------ MOST ENDORSED MOVIES ------\n"
@@ -642,7 +652,7 @@ class movieNightBot:
         c = self.conn.cursor()
         c.execute('''SELECT movie_title, rating FROM ratings''')
         movies_and_ratings = c.fetchall()
-        movies = [row['movie_title'] for row in movies_and_ratings]
+        movies = [row['movie_title'].lower() for row in movies_and_ratings]
         unique_movies = set(movies)
         movie_chooser_rating = []
         for movie in unique_movies:
@@ -654,7 +664,7 @@ class movieNightBot:
                 chooser = "???"
             else:
                 chooser = chooser['name']
-            ratings_for_movie = [row['rating'] for row in movies_and_ratings if row['movie_title'] == movie]
+            ratings_for_movie = [row['rating'] for row in movies_and_ratings if row['movie_title'].lower() == movie]
             movie_average_rating = sum(ratings_for_movie)/len(ratings_for_movie)
             movie_chooser_rating.append([movie, chooser, movie_average_rating])
 
