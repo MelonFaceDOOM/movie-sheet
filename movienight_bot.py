@@ -566,6 +566,9 @@ class movieNightBot:
         rows = c.fetchall()
         if not rows:
             raise ValueError(f'No watched movies were found for {chooser_name}.')
+        rows = [dict(row) for row in rows]
+        for row in rows:
+            row['movie_title'] = row['movie_title'].lower()
         movies_and_ratings = {}
         all_ratings = []
         for row in rows:
