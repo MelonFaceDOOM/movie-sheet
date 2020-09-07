@@ -171,7 +171,7 @@ class Core(commands.Cog):
 
     @commands.command()
     async def reviews_from(self, ctx, *reviewer):
-        """Finds reviews for a movie. Returns one specific review if reviwer is supplied as well."""
+        """Finds reviews for a movie. Returns one specific review if reviewer is supplied as well."""
         reviewer = " ".join(reviewer)
         try:
             message = mnb.find_reviews(reviewer_name=reviewer)
