@@ -181,7 +181,7 @@ def get_nick(id):
 @reup_auth
 def add_future_movie(movie, chooser):
     if find_exact_movie(ws_ratings, movie):
-        raise ValueError(f"Cannot suggest {movie} becuase it has already been watched.")
+        raise ValueError(f"Cannot suggest {movie} because it has already been watched.")
     index = add_movie(ws_future_movies, movie, chooser)
     return None
 
@@ -351,7 +351,7 @@ def chooser_suggestions(chooser):
     movies = [r[MOVIE_COL_FUTURE-1] for r in future_movies if r[CHOOSER_COL_FUTURE-1].lower() == chooser.lower()]
     if not movies:
         raise ValueError(f'No suggestions found for {chooser}')
-    message = f"------ SUGGESTSIONS FROM {chooser.upper()} ------\n"
+    message = f"------ SUGGESTIONS FROM {chooser.upper()} ------\n"
     for m in movies:
         message += m + "\n"
     return message

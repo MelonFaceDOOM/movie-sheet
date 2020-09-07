@@ -8,7 +8,7 @@ from operator import itemgetter
 def parse_time_range(start_raw, end_raw=None):
     start = parse_datetime(start_raw)
     if not end_raw:
-        # make a range out of just the start timestmap (i.e. 2020-07-19 becomes 2020-07-19 00:00 - 2020-07-19 23:59)
+        # make a range out of just the start timestamp (i.e. 2020-07-19 becomes 2020-07-19 00:00 - 2020-07-19 23:59)
         end = parse_datetime(start_raw, end_of_day=True)
     else:
         end = parse_datetime(end_raw)
@@ -140,7 +140,7 @@ def parse_month_day(month_day):
     month = month_day[:space]
     if len(month) < 3:
         return False
-    months = ['januray', 'february', 'march', 'april', 'may', 'june',
+    months = ['january', 'february', 'march', 'april', 'may', 'june',
               'july', 'august', 'september', 'october', 'november', 'december']
     for real_month in months:
         if real_month.startswith(month.lower()):

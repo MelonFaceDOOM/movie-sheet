@@ -53,7 +53,7 @@ class CoreMelonBotTest(unittest.TestCase):
         self.mnb.suggest_movie(movie_title=self.movie, chooser_discord_id=self.discord_id)
         #self.mnb.suggest_movie(movie_title=self.movie2, chooser_discord_id=self.discord_id)
         # TODO: add rate_movie, as well as an assertion test for it.
-        # TODO: alsoo add assertion to test that the user's rating shows up in a 2nd line
+        # TODO: also add assertion to test that the user's rating shows up in a 2nd line
         message = self.mnb.find_all('test')
         self.assertTrue(message.find("1 movie suggestion") > -1)
         
