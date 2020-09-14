@@ -1,0 +1,182 @@
+TODO: find event
+#TODO: remove all events
+# class Scheduling(commands.Cog):
+#     @commands.command()
+#     async def event(self, ctx, command, *args):
+#         """?event create/delete event_name
+#            ?event ready/unready/vote/unvote [event_name:] start_time [- end_time]"""
+#
+#         # 0) check command and exit early if create/delete,
+#         #    as no parsing is necessary for those commands
+#         if command == "create":
+#             await self.create_event(ctx, args)
+#             return None
+#         elif command == "delete":
+#             await self.delete_event(ctx, args)
+#             return None
+#         elif command == "summary":
+#             await self.event_summary(ctx, args)
+#             return None
+#         elif command == "help":
+#             await self.event_help(ctx)
+#             return None
+#         elif command not in ['ready', 'unready', 'vote', 'unvote']:
+#             raise ValueError(f'Command {command} not recognized.')
+#
+#         # 1) find title
+#         if args[0][-1] == ":":
+#             title = args[0][:-1]
+#             args = args[1:]
+#         else:
+#             title = sb.most_recent_event_title()
+#             if not title:
+#                 raise ValueError("There are currently no events registered")
+#
+#         # 2) find start/end times
+#         try:
+#             time_div = args.index("-")
+#         except ValueError:
+#             time_div = None
+#         if time_div:
+#             start_raw = " ".join(args[:time_div])
+#             end_raw = " ".join(args[time_div+1:])
+#             start, end = parse_time_range(start_raw, end_raw)
+#         else:
+#             # there is only 1 arg given for the time range.
+#             # it is either a vote_id associated with an existing time_range
+#             # OR, it is either something like "today", "saturday", "2020-09-09",
+#             # in which case the full day should be taken as the range,
+#             start_raw = " ".join(args)
+#             if start_raw.strip().isdigit():
+#                 start, end = sb.find_time_range_by_vote_id(
+#                     event_title=title, vote_id=start_raw.strip())
+#             else:
+#                 start, end = parse_time_range(start_raw)
+#
+#         # 3) call command with parsed args
+#         if command == "ready":
+#             await self.event_ready(ctx, title, start, end)
+#         elif command == "unready":
+#             await self.event_unready(ctx, title, start, end)
+#         elif command == "vote":
+#             await self.event_vote(ctx, title, start, end)
+#         elif command == "unvote":
+#             await self.event_unvote(ctx, title, start, end)
+#
+#     async def create_event(self, ctx, title):
+#         title = " ".join(title)
+#         if ":" in title:
+#             raise ValueError('title cannot contain ":"')
+#         try:
+#             sb.create_event(title)
+#             await ctx.send(f'The event "{title}" has been created.')
+#         except ValueError as e:
+#             await ctx.send(e)
+#
+#     async def delete_event(self, ctx, title):
+#         title = " ".join(title)
+#         try:
+#             sb.remove_event(title)
+#             return await ctx.send(f'The event "{title}" has been deleted.')
+#         except ValueError as e:
+#             return await ctx.send(e)
+#
+#     async def event_ready(self, ctx, event_title, start, end):
+#         try:
+#             ev = sb.build_event(event_title)
+#         except ValueError as e:
+#             return await ctx.send(e)
+#
+#         discord_id = ctx.message.author.id
+#         try:
+#             nick = sb.discord_id_to_name(discord_id)
+#         except ValueError as e:
+#             return await ctx.send(e)
+#         participant = ev.add_participant(nick)
+#         participant.add_availability(start, end)
+#         sb.update_event(ev)
+#         start_str = datetime.datetime.strftime(start, "%Y-%m-%d %H:%M")
+#         end_str = datetime.datetime.strftime(end, "%Y-%m-%d %H:%M")
+#         return await ctx.send(f'added availability to {ev.name} from {start_str} to {end_str}')
+#
+#     async def event_unready(self, ctx, event_title, start, end):
+#         try:
+#             ev = sb.build_event(event_title)
+#         except ValueError as e:
+#             return await ctx.send(e)
+#
+#         discord_id = ctx.message.author.id
+#         try:
+#             nick = sb.discord_id_to_name(discord_id)
+#         except ValueError as e:
+#             return await ctx.send(e)
+#         participant = ev.find_participant(nick)
+#         if not participant:
+#             return await ctx.send('participant not found')
+#         participant.remove_availability(start, end)
+#         sb.update_event(ev)
+#         start_str = datetime.datetime.strftime(start, "%Y-%m-%d %H:%M")
+#         end_str = datetime.datetime.strftime(end, "%Y-%m-%d %H:%M")
+#         return await ctx.send(f'removed availability from {start_str} to {end_str}')
+#
+#     async def event_vote(self, ctx, event_title, start, end):
+#         try:
+#             ev = sb.build_event(event_title)
+#         except ValueError as e:
+#             return await ctx.send(e)
+#
+#         discord_id = ctx.message.author.id
+#         try:
+#             nick = sb.discord_id_to_name(discord_id)
+#         except ValueError as e:
+#             return await ctx.send(e)
+#         participant = ev.add_participant(nick)
+#         participant.suggest_time(start, end)
+#         sb.update_event(ev)
+#         start_str = datetime.datetime.strftime(start, "%Y-%m-%d %H:%M")
+#         end_str = datetime.datetime.strftime(end, "%Y-%m-%d %H:%M")
+#         return await ctx.send(f'voted for {event_title} to occur between {start_str} and {end_str}')
+#
+#     async def event_unvote(self, ctx, event_title, start, end):
+#         try:
+#             ev = sb.build_event(event_title)
+#         except ValueError as e:
+#             return await ctx.send(e)
+#
+#         discord_id = ctx.message.author.id
+#         try:
+#             nick = sb.discord_id_to_name(discord_id)
+#         except ValueError as e:
+#             return await ctx.send(e)
+#         participant = ev.find_participant(nick)
+#         if not participant:
+#             return await ctx.send('participant not found')
+#         participant.unsuggest_time(start, end)
+#         sb.update_event(ev)
+#         start_str = datetime.datetime.strftime(start, "%Y-%m-%d %H:%M")
+#         end_str = datetime.datetime.strftime(end, "%Y-%m-%d %H:%M")
+#         return await ctx.send(f'you have removed your vote for {event_title} to occur between {start_str} and {end_str}')
+#
+#     async def event_summary(self, ctx, title):
+#         title = " ".join(title)
+#         if not title:
+#             title = sb.most_recent_event_title()
+#             if not title:
+#                 raise ValueError("There are currently no events registered")
+#         try:
+#             ev = sb.build_event(title)
+#         except ValueError as e:
+#             return await ctx.send(e)
+#         day_summaries = ev.summary()
+#         for day_summary in day_summaries:
+#             await ctx.send(f'```{day_summary}```')
+#
+#     async def event_help(self, ctx):
+#         message = "```[] denotes optional\n" \
+#                   "?event create event_name\n" \
+#                   "?event delete event_name\n" \
+#                   "?event ready [event_name: ]start_time[ - end_time]\n" \
+#                   "?event unready [event_name: ]start_time[ - end_time]\n" \
+#                   "?event vote [event_name: ]start_time[ - end_time]\n" \
+#                   "?event unvote [event_name: ]start_time[ - end_time]```"
+#         await ctx.send(message)

@@ -6,10 +6,10 @@ from melon_scheduling import Event, Participant, SuggestedTime
 
 class schedulingBot:
     """Takes care of sql transactions involved in saving/updating Events from melon_scheduling in a database."""
-    def __init__(self, db_file=None):
-        if not db_file:
-            db_file = 'scheduling_bot.db'
-        self.conn = sqlite3.connect(db_file)
+    def __init__(self, db_filename=None):
+        if not db_filename:
+            db_filename = 'scheduling_bot.db'
+        self.conn = sqlite3.connect(db_filename)
         c = self.conn.cursor()
         c.execute('''CREATE TABLE IF NOT EXISTS users
                          (discord_id INTEGER PRIMARY KEY NOT NULL UNIQUE, name TEXT NOT NULL UNIQUE COLLATE NOCASE,

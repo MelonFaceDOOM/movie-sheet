@@ -1,22 +1,17 @@
 from scraping.ebert import ebert_lookup
 from scraping.rotten_tomatoes import random_tomato
-import discord
 from discord.ext import commands
-import os
-import random
-import string
-import datetime
-from melon_scheduling import parse_time_range
+from make_melonbot_db import make_db
 from movienight_bot import movieNightBot
-from scheduling_bot import schedulingBot
 from config import bot_token
+from melon_discord import user_to_id, id_to_user
 
-db_file = 'melonbot.db'
-mnb = movieNightBot(db_file)
-sb = schedulingBot(db_file)
+db_filename = 'melonbot.db'
+make_db(db_filename)
+mnb = movieNightBot(db_filename)
 
 
-def chunk(message, max_length=1900):
+async def chunk(message, max_length=1900):
     chunks = []
     while message:
         chunk = ""
@@ -35,8 +30,8 @@ def chunk(message, max_length=1900):
             
         chunks.append(chunk)
     return chunks
-    
-    
+
+
 class Core(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -46,25 +41,16 @@ class Core(commands.Cog):
         """Returns the link for the OG google sheet"""
         url = "https://docs.google.com/spreadsheets/d/1RhQdngV4PshYQAOBYf9lT7MCmPk9ir1yHw9RL7Wn8PM/edit#gid=1230671661"
         await ctx.send(url)
-
-    @commands.command()
-    async def register(self, ctx, *nick):
-        """Register with a nickname."""
-        nick = " ".join(nick)
-        discord_id = ctx.message.author.id
-        try:
-            mnb.register(discord_id, nick)
-        except ValueError as e:
-            return await ctx.send(e)
-        return await ctx.send(f"you have registered as {nick}")
     
     @commands.command()
     async def add(self, ctx, *movie):
         """Suggest a future movie."""
         movie = " ".join(movie)
         discord_id = ctx.message.author.id
+        guild_id = ctx.message.guild.id
         try:
-            mnb.suggest_movie(movie, discord_id)
+            await mnb.suggest_movie(guild_id=guild_id, movie_title=movie,
+                                    user_id=discord_id)
         except ValueError as e:
             return await ctx.send(e)
         return await ctx.send(f"{movie} has been suggested")
@@ -73,31 +59,38 @@ class Core(commands.Cog):
     async def remove(self, ctx, *movie):
         """Remove a suggested movie."""
         movie = " ".join(movie)
-        discord_id = ctx.message.author.id
+        guild_id = ctx.message.guild.id
         try:
-            mnb.remove_suggestion(movie, discord_id)
+            await mnb.remove_suggestion(guild_id=guild_id, movie_title=movie)
         except ValueError as e:
             return await ctx.send(e)
         return await ctx.send(f"{movie} has been removed")
             
     @commands.command()
-    async def transfer(self, ctx, movie, nick):
+    async def transfer(self, ctx, movie, name_or_mention):
         """Transfer choosership to a new person.
         Requires quotations around movie and nick if they contain spaces.
         """
-        discord_id = ctx.message.author.id
+        discord_id = await user_to_id(ctx, name_or_mention)
+        if not discord_id:
+            return await ctx.send(f'User {name_or_mention} not found')
+        recipient_name = await id_to_user(ctx, discord_id)
+        guild_id = ctx.message.guild.id
         try:
-            mnb.transfer_suggestion(movie, discord_id, nick)
+            await mnb.transfer_suggestion(guild_id=guild_id, movie_title=movie,
+                                          recipient_user_id=discord_id)
         except ValueError as e:
             return await ctx.send(e)
-        return await ctx.send(f"{movie} was transferred to {nick}")
+        return await ctx.send(f"{movie} was transferred to {recipient_name}")
         
     @commands.command()
-    async def find(self, ctx, *search_string):
+    async def find(self, ctx, *search_term):
         """Find a user or movie."""
-        search_string = " ".join(search_string)
+        search_term = " ".join(search_term)
+        guild_id = ctx.message.guild.id
         try:
-            message = mnb.find_all(search_string)
+            message = await mnb.find_all(ctx=ctx, guild_id=guild_id,
+                                         search_term=search_term)
         except ValueError as e:
             return await ctx.send(e)
         return await ctx.send("```"+message+"```")
@@ -107,8 +100,10 @@ class Core(commands.Cog):
         """Endorse a movie."""
         movie = " ".join(movie)
         discord_id = ctx.message.author.id
+        guild_id = ctx.message.guild.id
         try:
-            mnb.endorse_suggestion(movie, discord_id)
+            await mnb.endorse_suggestion(guild_id=guild_id, movie_title=movie,
+                                         endorser_user_id=discord_id)
         except ValueError as e:
             return await ctx.send(e)
         return await ctx.send(f"You've endorsed {movie}.")
@@ -118,8 +113,10 @@ class Core(commands.Cog):
         """Remove endorsement from a movie."""
         movie = " ".join(movie)
         discord_id = ctx.message.author.id
+        guild_id = ctx.message.guild.id
         try:
-            mnb.unendorse_suggestion(movie, discord_id)
+            await mnb.unendorse_suggestion(guild_id=guild_id, movie_title=movie,
+                                           endorser_user_id=discord_id)
         except ValueError as e:
             return await ctx.send(e)
         return await ctx.send(f"You've unendorsed {movie}.")
@@ -128,13 +125,15 @@ class Core(commands.Cog):
     async def rate(self, ctx, *movie_and_rating):
         """Rate a movie."""
         discord_id = ctx.message.author.id
+        guild_id = ctx.message.guild.id
         rating = movie_and_rating[-1]
         cutoff = str(rating).find("/10")
         if cutoff > -1:
             rating = str(rating)[:cutoff]
         movie = " ".join(movie_and_rating[:-1])
         try:
-            mnb.rate_movie(movie, discord_id, rating)
+            await mnb.rate_movie(guild_id=guild_id, movie_title=movie,
+                                 rater_user_id=discord_id, rating=rating)
         except ValueError as e:
             return await ctx.send(e)
         return await ctx.send(f"You rated {movie} {rating}/10.")
@@ -143,9 +142,11 @@ class Core(commands.Cog):
     async def unrate(self, ctx, *movie):
         """Rate a movie."""
         discord_id = ctx.message.author.id
+        guild_id = ctx.message.guild.id
         movie = " ".join(movie)
         try:
-            mnb.remove_rating(movie, discord_id)
+            await mnb.remove_rating(guild_id=guild_id, movie_title=movie,
+                                    rater_user_id=discord_id)
         except ValueError as e:
             return await ctx.send(e)
         return await ctx.send(f"You have removed your rating from {movie}.")
@@ -154,27 +155,43 @@ class Core(commands.Cog):
     async def review(self, ctx, movie, review):
         """Review a movie. Use quotations around movie and review args."""
         discord_id = ctx.message.author.id
+        guild_id = ctx.message.guild.id
         try:
-            mnb.review_movie(movie_title=movie, reviewer_discord_id=discord_id, review_text=review)
+            await mnb.review_movie(guild_id=guild_id, movie_title=movie,
+                                   reviewer_user_id=discord_id, review_text=review)
         except ValueError as e:
             return await ctx.send(e)
         return await ctx.send(f"You have reviewed {movie}.")
 
     @commands.command()
-    async def find_review(self, ctx, movie, reviewer):
+    async def find_review(self, ctx, movie, *name_or_mention):
         """Finds reviews for a movie from a reviewer."""
+        name_or_mention = " ".join(name_or_mention)
+        guild_id = ctx.message.guild.id
+        if not name_or_mention:
+            discord_id = ctx.message.author.id
+        else:
+            discord_id = await user_to_id(ctx, name_or_mention)
+            if not discord_id:
+                return await ctx.send(f'User {name_or_mention} not found')
         try:
-            message = mnb.find_reviews(movie_title=movie, reviewer_name=reviewer)
+            message = await mnb.find_reviews(ctx=ctx, guild_id=guild_id, movie_title=movie,
+                                             reviewer_user_id=discord_id)
         except ValueError as e:
             return await ctx.send(e)
         return await ctx.send("```"+message+"```")
 
     @commands.command()
-    async def reviews_from(self, ctx, *reviewer):
+    async def reviews_from(self, ctx, *name_or_mention):
         """Finds reviews for a movie. Returns one specific review if reviwer is supplied as well."""
-        reviewer = " ".join(reviewer)
+        name_or_mention = " ".join(name_or_mention)
+        discord_id = await user_to_id(ctx, name_or_mention)
+        if not discord_id:
+            return await ctx.send(f'User {name_or_mention} not found')
+        guild_id = ctx.message.guild.id
         try:
-            message = mnb.find_reviews(reviewer_name=reviewer)
+            message = await mnb.find_reviews(ctx=ctx, guild_id=guild_id,
+                                             reviewer_user_id=discord_id)
         except ValueError as e:
             return await ctx.send(e)
         return await ctx.send("```"+message+"```")
@@ -182,9 +199,11 @@ class Core(commands.Cog):
     @commands.command()
     async def reviews_for(self, ctx, *movie):
         """Finds reviews for a movie."""
+        guild_id = ctx.message.guild.id
         movie = " ".join(movie)
         try:
-            message = mnb.find_reviews(movie_title=movie)
+            message = await mnb.find_reviews(ctx=ctx, guild_id=guild_id,
+                                             movie_title=movie)
         except ValueError as e:
             return await ctx.send(e)
         return await ctx.send("```"+message+"```")
@@ -192,8 +211,9 @@ class Core(commands.Cog):
     @commands.command()
     async def tag(self, ctx, movie, tag):
         """Add a tag to a movie. Use quotations around movie and tag args."""
+        guild_id = ctx.message.guild.id
         try:
-            mnb.tag_movie(movie_title=movie, tag_text=tag)
+            await mnb.tag_movie(guild_id=guild_id, movie_title=movie, tag_text=tag)
         except ValueError as e:
             return await ctx.send(e)
         return await ctx.send(f"You have tagged {movie} as {tag}.")
@@ -201,8 +221,9 @@ class Core(commands.Cog):
     @commands.command()
     async def untag(self, ctx, movie, tag):
         """Remove a tag from a movie. Use quotations around movie and tag args."""
+        guild_id = ctx.message.guild.id
         try:
-            mnb.untag_movie(movie_title=movie, tag_text=tag)
+            await mnb.untag_movie(guild_id=guild_id, movie_title=movie, tag_text=tag)
         except ValueError as e:
             return await ctx.send(e)
         return await ctx.send(f"You have untagged {tag} from {movie}.")
@@ -210,11 +231,12 @@ class Core(commands.Cog):
     @commands.command()
     async def tagged(self, ctx, *tags):
         """Find all movies with specified tags. If multiple tags, separate with commas."""
+        guild_id = ctx.message.guild.id
         tags = " ".join(tags)
         tags = tags.split(",")
         tags = [tag.strip() for tag in tags]
         try:
-            message = mnb.find_movies_with_tags(tags)
+            message = await mnb.find_movies_with_tags(guild_id=guild_id, tags=tags)
         except ValueError as e:
             return await ctx.send(e)
         return await ctx.send("```"+message+"```")
@@ -222,9 +244,10 @@ class Core(commands.Cog):
     @commands.command()
     async def tags(self, ctx, *movie):
         """Return tags for a specific movie."""
+        guild_id = ctx.message.guild.id
         movie = " ".join(movie)
         try:
-            message = mnb.find_movie_tags(movie_title=movie)
+            message = await mnb.find_movie_tags(guild_id=guild_id, movie_title=movie)
         except ValueError as e:
             return await ctx.send(e)
         return await ctx.send("```"+message+"```")
@@ -232,60 +255,95 @@ class Core(commands.Cog):
 
 class IndividualAnalytics(commands.Cog):
     @commands.command()
-    async def suggestions(self, ctx, *nick):
+    async def suggestions(self, ctx, *name_or_mention):
         """Return movies suggested by a chooser."""
-        nick = " ".join(nick)
-        if not nick:
+        name_or_mention = " ".join(name_or_mention)
+        guild_id = ctx.message.guild.id
+        if not name_or_mention:
             discord_id = ctx.message.author.id
         else:
-            discord_id = mnb.name_to_discord_id(nick)
+            discord_id = await user_to_id(ctx, name_or_mention)
+            if not discord_id:
+                return await ctx.send(f'User {name_or_mention} not found')
         try:
-            messages = chunk(mnb.retrieve_suggestions(discord_id))
+            messages = await chunk(await mnb.retrieve_suggestions(ctx=ctx, guild_id=guild_id,
+                                                                  chooser_user_id=discord_id))
+        except ValueError as e:
+            return await ctx.send(e)
+        for message in messages:
+            await ctx.send("```"+message+"```")
+
+    @commands.command()
+    async def endorsements(self, ctx, *name_or_mention):
+        """Return movies endorsed by a user."""
+        name_or_mention = " ".join(name_or_mention)
+        guild_id = ctx.message.guild.id
+        if not name_or_mention:
+            discord_id = ctx.message.author.id
+        else:
+            discord_id = await user_to_id(ctx, name_or_mention)
+            if not discord_id:
+                return await ctx.send(f'User {name_or_mention} not found')
+        try:
+            messages = await chunk(await mnb.retrieve_endorsements(ctx=ctx, guild_id=guild_id,
+                                                                  endorser_user_id=discord_id))
         except ValueError as e:
             return await ctx.send(e)
         for message in messages:
             await ctx.send("```"+message+"```")
             
     @commands.command()
-    async def chooser(self, ctx, *nick):
+    async def chooser(self, ctx, *name_or_mention):
         """Return ratings received by a chooser."""
-        nick = " ".join(nick)
-        if not nick:
+        guild_id = ctx.message.guild.id
+        name_or_mention = " ".join(name_or_mention)
+        if not name_or_mention:
             discord_id = ctx.message.author.id
         else:
-            discord_id = mnb.name_to_discord_id(nick)
+            discord_id = await user_to_id(ctx, name_or_mention)
+            if not discord_id:
+                return await ctx.send(f'User {name_or_mention} not found')
         try:
-            messages = chunk(mnb.ratings_for_choosers_movies(discord_id))
+            messages = await chunk(await mnb.ratings_for_choosers_movies(ctx=ctx, guild_id=guild_id,
+                                                                         chooser_user_id=discord_id))
         except ValueError as e:
             return await ctx.send(e)
         for message in messages:
             await ctx.send("```"+message+"```")
         
     @commands.command()
-    async def ratings(self, ctx, *nick):
+    async def ratings(self, ctx, *name_or_mention):
         """Return ratings from a reviewer."""
-        nick = " ".join(nick)
-        if not nick:
+        guild_id = ctx.message.guild.id
+        name_or_mention = " ".join(name_or_mention)
+        if not name_or_mention:
             discord_id = ctx.message.author.id
         else:
-            discord_id = mnb.name_to_discord_id(nick)
+            discord_id = await user_to_id(ctx, name_or_mention)
+            if not discord_id:
+                return await ctx.send(f'User {name_or_mention} not found')
         try:
-            messages = chunk(mnb.ratings_from_reviewer(discord_id))
+            messages = await chunk(await mnb.ratings_from_reviewer(ctx=ctx, guild_id=guild_id,
+                                                                   rater_user_id=discord_id))
         except ValueError as e:
             return await ctx.send(e)
         for message in messages:
             await ctx.send("```"+message+"```")
     
     @commands.command()
-    async def unrated(self, ctx, *nick):
+    async def unrated(self, ctx, *name_or_mention):
         """Return unrated movies from a reviewer."""
-        nick = " ".join(nick)
-        if not nick:
+        guild_id = ctx.message.guild.id
+        name_or_mention = " ".join(name_or_mention)
+        if not name_or_mention:
             discord_id = ctx.message.author.id
         else:
-            discord_id = mnb.name_to_discord_id(nick)
+            discord_id = await user_to_id(ctx, name_or_mention)
+            if not discord_id:
+                return await ctx.send(f'User {name_or_mention} not found')
         try:
-            messages = chunk(mnb.missing_ratings_for_reviewer(discord_id))
+            messages = await chunk(await mnb.missing_ratings_for_reviewer(ctx=ctx, guild_id=guild_id,
+                                                                          rater_user_id=discord_id))
         except ValueError as e:
             return await ctx.send(e)
         for message in messages:
@@ -296,54 +354,89 @@ class GroupAnalytics(commands.Cog):
     @commands.command()
     async def top_endorsed(self, ctx, n=5):
         """Return most-endorsed movies."""
+        guild_id = ctx.message.guild.id
         try:
-            messages = chunk(mnb.top_endorsed(n))
+            messages = await chunk(await mnb.top_endorsed(ctx=ctx, guild_id=guild_id, n=n))
         except ValueError as e:
             return await ctx.send(e)
         for message in messages:
             await ctx.send("```"+message+"```")
     
     @commands.command()
-    async def unendorsed(self, ctx, *nick):
+    async def unendorsed(self, ctx, *name_or_mention):
         """Return unendorsed movies."""
-        nick = " ".join(nick)
-        discord_id = mnb.name_to_discord_id(nick)
+        name_or_mention = " ".join(name_or_mention)
+        guild_id = ctx.message.guild.id
+        if not name_or_mention:
+            discord_id = ctx.message.author.id
+        else:
+            discord_id = await user_to_id(ctx, name_or_mention)
+            if not discord_id:
+                return await ctx.send(f'User {name_or_mention} not found')
         try:
-            messages = chunk(mnb.unendorsed(discord_id))
+            messages = await chunk(await mnb.unendorsed(ctx=ctx, guild_id=guild_id,
+                                                        chooser_user_id=discord_id))
         except ValueError as e:
             return await ctx.send(e)
         for message in messages:
             await ctx.send("```"+message+"```")
 
     @commands.command()
+    async def recent(self, ctx, n=10):
+        """Return recently watched movies."""
+        guild_id = ctx.message.guild.id
+        try:
+            messages = await chunk(await mnb.recently_watched_movies(ctx=ctx, guild_id=guild_id, n=n))
+        except ValueError as e:
+            return await ctx.send(e)
+        for message in messages:
+            await ctx.send("```" + message + "```")
+
+    @commands.command()
     async def standings(self, ctx):
         """Return rankings of chooser scores."""
-        message = mnb.standings()
+        guild_id = ctx.message.guild.id
+        try:
+            message = await mnb.standings(ctx=ctx, guild_id=guild_id)
+        except ValueError as e:
+            return await ctx.send(e)
         return await ctx.send("```"+message+"```")
         
     @commands.command()
-    async def top_rated(self, ctx, n=10):
+    async def top(self, ctx, n=10):
         """Return the top-rated movies."""
+        guild_id = ctx.message.guild.id
         try:
-            messages = chunk(mnb.top_ratings(n))
+            messages = await chunk(await mnb.top_ratings(ctx=ctx, guild_id=guild_id, top=True, n=n))
         except ValueError as e:
             return await ctx.send(e)
         for message in messages:
             await ctx.send("```"+message+"```")
-        
+
+    @commands.command()
+    async def bottom(self, ctx, n=10):
+        """Return the bottom-rated movies."""
+        guild_id = ctx.message.guild.id
+        try:
+            messages = await chunk(await mnb.top_ratings(ctx=ctx, guild_id=guild_id, top=False, n=n))
+        except ValueError as e:
+            return await ctx.send(e)
+        for message in messages:
+            await ctx.send("```" + message + "```")
         
 class Research(commands.Cog):
     @commands.command()
     async def random(self, ctx):
         """Return a random suggested movie."""
-        movie = mnb.pick_random_movie()
+        guild_id = ctx.message.guild.id
+        movie = await mnb.pick_random_movie(guild_id=guild_id)
         return await ctx.send("```"+movie+"```")
 
     @commands.command()
     async def ebert(self, ctx, *movie):
         """Return a Rogert Ebert review for a movie."""
         movie = " ".join(movie)
-        messages = chunk(ebert_lookup(movie))
+        messages = await chunk(ebert_lookup(movie))
         for message in messages:
             await ctx.send("```"+message+"```")
  
@@ -351,7 +444,7 @@ class Research(commands.Cog):
     async def fresh(self, ctx, *movie):
         """Return a random fresh RT review for a movie."""
         movie = " ".join(movie)
-        messages = chunk(random_tomato(movie, fresh=1))
+        messages = await chunk(random_tomato(movie, fresh=1))
         for message in messages:
             await ctx.send("```"+message+"```")
         
@@ -359,195 +452,15 @@ class Research(commands.Cog):
     async def rotten(self, ctx, *movie):
         """Return a random rotten RT review for a movie."""
         movie = " ".join(movie)
-        messages = chunk(random_tomato(movie, fresh=0))
+        messages = await chunk(random_tomato(movie, fresh=0))
         for message in messages:
             await ctx.send("```"+message+"```")
 
 
-#TODO: find event
-#TODO: remove all events
-class Scheduling(commands.Cog):
-    @commands.command()
-    async def event(self, ctx, command, *args):
-        """?event create/delete event_name
-           ?event ready/unready/vote/unvote [event_name:] start_time [- end_time]"""
+bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"),
+                   case_insensitive=True,
+                   description='ur fav movienight companion.\n!register <nick> to get started!!!')
 
-        # 0) check command and exit early if create/delete,
-        #    as no parsing is necessary for those commands
-        if command == "create":
-            await self.create_event(ctx, args)
-            return None
-        elif command == "delete":
-            await self.delete_event(ctx, args)
-            return None
-        elif command == "summary":
-            await self.event_summary(ctx, args)
-            return None
-        elif command == "help":
-            await self.event_help(ctx)
-            return None
-        elif command not in ['ready', 'unready', 'vote', 'unvote']:
-            raise ValueError(f'Command {command} not recognized.')
-
-        # 1) find title
-        if args[0][-1] == ":":
-            title = args[0][:-1]
-            args = args[1:]
-        else:
-            title = sb.most_recent_event_title()
-            if not title:
-                raise ValueError("There are currently no events registered")
-        
-        # 2) find start/end times
-        try:
-            time_div = args.index("-")
-        except ValueError:
-            time_div = None
-        if time_div:
-            start_raw = " ".join(args[:time_div])
-            end_raw = " ".join(args[time_div+1:])
-            start, end = parse_time_range(start_raw, end_raw)
-        else:
-            # there is only 1 arg given for the time range.
-            # it is either a vote_id associated with an existing time_range
-            # OR, it is either something like "today", "saturday", "2020-09-09",
-            # in which case the full day should be taken as the range,
-            start_raw = " ".join(args)
-            if start_raw.strip().isdigit():
-                start, end = sb.find_time_range_by_vote_id(
-                    event_title=title, vote_id=start_raw.strip())
-            else:
-                start, end = parse_time_range(start_raw)
-
-        # 3) call command with parsed args
-        if command == "ready":
-            await self.event_ready(ctx, title, start, end)
-        elif command == "unready":
-            await self.event_unready(ctx, title, start, end)
-        elif command == "vote":
-            await self.event_vote(ctx, title, start, end)
-        elif command == "unvote":
-            await self.event_unvote(ctx, title, start, end)
-
-    async def create_event(self, ctx, title):
-        title = " ".join(title)
-        if ":" in title:
-            raise ValueError('title cannot contain ":"')
-        try:
-            sb.create_event(title)
-            await ctx.send(f'The event "{title}" has been created.')
-        except ValueError as e:
-            await ctx.send(e)
-
-    async def delete_event(self, ctx, title):
-        title = " ".join(title)
-        try:
-            sb.remove_event(title)
-            return await ctx.send(f'The event "{title}" has been deleted.')
-        except ValueError as e:
-            return await ctx.send(e)
-    
-    async def event_ready(self, ctx, event_title, start, end):
-        try:
-            ev = sb.build_event(event_title)
-        except ValueError as e:
-            return await ctx.send(e)        
-        
-        discord_id = ctx.message.author.id
-        try:
-            nick = sb.discord_id_to_name(discord_id)
-        except ValueError as e:
-            return await ctx.send(e) 
-        participant = ev.add_participant(nick)
-        participant.add_availability(start, end)
-        sb.update_event(ev)
-        start_str = datetime.datetime.strftime(start, "%Y-%m-%d %H:%M")
-        end_str = datetime.datetime.strftime(end, "%Y-%m-%d %H:%M")
-        return await ctx.send(f'added availability to {ev.name} from {start_str} to {end_str}')
-
-    async def event_unready(self, ctx, event_title, start, end):
-        try:
-            ev = sb.build_event(event_title)
-        except ValueError as e:
-            return await ctx.send(e)
-
-        discord_id = ctx.message.author.id
-        try:
-            nick = sb.discord_id_to_name(discord_id)
-        except ValueError as e:
-            return await ctx.send(e)
-        participant = ev.find_participant(nick)
-        if not participant:
-            return await ctx.send('participant not found')
-        participant.remove_availability(start, end)
-        sb.update_event(ev)
-        start_str = datetime.datetime.strftime(start, "%Y-%m-%d %H:%M")
-        end_str = datetime.datetime.strftime(end, "%Y-%m-%d %H:%M")
-        return await ctx.send(f'removed availability from {start_str} to {end_str}') 
-
-    async def event_vote(self, ctx, event_title, start, end):
-        try:
-            ev = sb.build_event(event_title)
-        except ValueError as e:
-            return await ctx.send(e)
-
-        discord_id = ctx.message.author.id
-        try:
-            nick = sb.discord_id_to_name(discord_id)
-        except ValueError as e:
-            return await ctx.send(e)
-        participant = ev.add_participant(nick)
-        participant.suggest_time(start, end)
-        sb.update_event(ev)
-        start_str = datetime.datetime.strftime(start, "%Y-%m-%d %H:%M")
-        end_str = datetime.datetime.strftime(end, "%Y-%m-%d %H:%M")
-        return await ctx.send(f'voted for {event_title} to occur between {start_str} and {end_str}') 
-
-    async def event_unvote(self, ctx, event_title, start, end):
-        try:
-            ev = sb.build_event(event_title)
-        except ValueError as e:
-            return await ctx.send(e)
-
-        discord_id = ctx.message.author.id
-        try:
-            nick = sb.discord_id_to_name(discord_id)
-        except ValueError as e:
-            return await ctx.send(e)
-        participant = ev.find_participant(nick)
-        if not participant:
-            return await ctx.send('participant not found')    
-        participant.unsuggest_time(start, end)
-        sb.update_event(ev)
-        start_str = datetime.datetime.strftime(start, "%Y-%m-%d %H:%M")
-        end_str = datetime.datetime.strftime(end, "%Y-%m-%d %H:%M")
-        return await ctx.send(f'you have removed your vote for {event_title} to occur between {start_str} and {end_str}')
-
-    async def event_summary(self, ctx, title):
-        title = " ".join(title)
-        if not title:
-            title = sb.most_recent_event_title()
-            if not title:
-                raise ValueError("There are currently no events registered")
-        try:
-            ev = sb.build_event(title)
-        except ValueError as e:
-            return await ctx.send(e)
-        day_summaries = ev.summary()
-        for day_summary in day_summaries:
-            await ctx.send(f'```{day_summary}```')
-
-    async def event_help(self, ctx):
-        message = "```[] denotes optional\n" \
-                  "?event create event_name\n" \
-                  "?event delete event_name\n" \
-                  "?event ready [event_name: ]start_time[ - end_time]\n" \
-                  "?event unready [event_name: ]start_time[ - end_time]\n" \
-                  "?event vote [event_name: ]start_time[ - end_time]\n" \
-                  "?event unvote [event_name: ]start_time[ - end_time]```"
-        await ctx.send(message)
-
-bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"), description='ur fav movienight companion.\n!register <nick> to get started!!!')
 
 @bot.event
 async def on_ready():
@@ -558,5 +471,4 @@ bot.add_cog(Core(bot))
 bot.add_cog(IndividualAnalytics(bot))
 bot.add_cog(GroupAnalytics(bot))
 bot.add_cog(Research(bot))
-bot.add_cog(Scheduling(bot))
 bot.run(bot_token)

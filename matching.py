@@ -32,6 +32,7 @@ class Substrings:
                     return match
         return None
 
+
 def find_closest_match(term, bank, threshold=50):
     substr_match = ""
     full_match = ""

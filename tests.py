@@ -1,39 +1,67 @@
 import unittest
 import os
-from movie_db import movieNightBot
-import sqlite3 
+import sqlite3
+from bot import Core, GroupAnalytics, IndividualAnalytics, Research
 
 
-class CoreMelonBotTest(unittest.TestCase):
+class Guild:
+    def __init__(self, id):
+        self.id = id
+
+
+class Author:
+    def __init__(self, id):
+        self.id = id
+
+
+class Message:
+    def __init__(self, author, guild):
+        self.author = author
+        self.guild = guild
+
+
+class Ctx:
+    def __init__(self, message):
+        self.message = message
+
+    async def send(self, message):
+        print(message)
+
+
+class Bot:
+    def __init__(self, ctx):
+        self.ctx = ctx
+
+
+class MelonBotTest(unittest.TestCase):
+    # TODO: rewrite everything. I thought i could make dummy ctx objects and pass them in,
+    #  but that doesn't really work.
+    #  Either find a library built for testing discord.py, or
+    #  Just test the functions from movienight_bot.py that bot.py calls directly.
     def setUp(self):
+        guild1 = Guild(id=0)
+        guild2 = Guild(id=1)
+        author1 = Author(id=0)
+        author2 = Author(id=1)
+        message1 = Message(author=author1, guild=guild1)
+        message2 = Message(author=author2, guild=guild2)
+        ctx1 = Ctx(message=message1)
+        ctx2 = Ctx(message=message2)
 
-        self.mnb = movieNightBot(db_file=":memory:")
-        self.discord_id = 99999
-        self.discord_id2 = 11111
-        self.discord_id3 = 22222
-        self.nick = 'test000'
-        self.nick2 = 'test001'
-        self.nick3 = 'test002'
-        self.movie = "a test movie"
-        self.movie2 = "second test movie"
-        
-    def test_register(self):
-        self.mnb.register(discord_id=self.discord_id, nick=self.nick)
-        
-    def test_register_duplicate_name(self):
-        self.mnb.register(discord_id=self.discord_id2, nick=self.nick2)
-        with self.assertRaises(ValueError):
-            self.mnb.register(discord_id=self.discord_id2, nick=self.nick2)
-            
-    def test_register_duplicate_discord_id(self):
-        self.mnb.register(discord_id=self.discord_id2, nick=self.nick)
-        with self.assertRaises(ValueError):
-            self.mnb.register(discord_id=self.discord_id2, nick=self.nick)
+        bot1 = Bot(ctx1)
+        bot2 = Bot(ctx2)
+        self.core1 = Core(bot=bot1)
+        self.ga1 = GroupAnalytics(bot=bot1)
+        self.ia1 = IndividualAnalytics(bot=bot1)
+        self.research1 = Research(bot=bot1)
+        self.core2 = Core(bot=bot2)
+        self.ga2 = GroupAnalytics(bot=bot2)
+        self.ia2 = IndividualAnalytics(bot=bot2)
+        self.research2 = Research(bot=bot2)
             
     def test_suggest_movie(self):
-        self.mnb.suggest_movie(movie_title=self.movie, chooser_discord_id=self.discord_id)
-        movie_exists = self.mnb.suggestion_exists(self.movie)
-        self.assertTrue(movie_exists)
+        self.core1.add(ctx=self.core1.bot.ctx, movie=["a", "movie"])
+        #self.assertTrue(movie_exists)
         
     def test_add_duplicate_movie(self):
         self.mnb.suggest_movie(movie_title=self.movie2, chooser_discord_id=self.discord_id)
