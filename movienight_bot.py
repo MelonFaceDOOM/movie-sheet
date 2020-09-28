@@ -51,8 +51,8 @@ class movieNightBot:
         existing_movie = await self.find_exact_movie(guild_id, movie_title)
         if not existing_movie:
             raise ValueError(f'The movie "{movie_title}" could not be found')
-        elif existing_movie['watched'] == 1:
-            raise ValueError(f'The movie "{movie_title}" has already been watched, so it cannot be transferred')
+        # elif existing_movie['watched'] == 1:
+        #     raise ValueError(f'The movie "{movie_title}" has already been watched, so it cannot be transferred')
         c = self.conn.cursor()
         c.execute('''UPDATE movies SET user_id = ? WHERE guild_id = ? AND title = ?''',
                   (recipient_user_id, guild_id, movie_title))
