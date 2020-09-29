@@ -1,5 +1,6 @@
 from scraping.ebert import ebert_lookup
 from scraping.rotten_tomatoes import random_tomato
+from scraping.gamespot import random_gamespot_post
 from discord.ext import commands
 from make_melonbot_db import make_db
 from movienight_bot import movieNightBot
@@ -453,6 +454,15 @@ class Research(commands.Cog):
         """Return a random rotten RT review for a movie."""
         movie = " ".join(movie)
         messages = await chunk(random_tomato(movie, fresh=0))
+        for message in messages:
+            await ctx.send("```"+message+"```")
+            
+    @commands.command()
+    async def gamespot(self, ctx):
+        """Return a random rotten GS post."""
+        author, time, post_link, post = random_gamespot_post()
+        message = author + " - " + time + "\n" + post + "\n\n" + "read more:\n" + post_link
+        messages = await chunk(message)
         for message in messages:
             await ctx.send("```"+message+"```")
 
