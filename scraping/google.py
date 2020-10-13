@@ -1,6 +1,4 @@
-import re
 from googleapiclient.discovery import build
-import csv
 import os
 
 # custom search engine id
@@ -11,6 +9,7 @@ with open(gcsekey) as f:
 gapikey = os.path.join(os.path.dirname(__file__), 'gapikey')
 with open(gapikey) as f:
     my_api_key = f.read()
+
     
 def search(search_term, api_key=my_api_key, cse_id=my_cse_id, **kwargs):
     service = build("customsearch", "v1", developerKey=api_key)

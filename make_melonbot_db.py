@@ -51,6 +51,11 @@ def make_db(db_filename=None):
                  FOREIGN KEY(guild_id) REFERENCES guilds (id),
                  FOREIGN KEY(movie_id) REFERENCES movies (id),
                  UNIQUE(guild_id, movie_id, tag_text))''')
+    c.execute('''CREATE TABLE IF NOT EXISTS gamespot_self_destruct_votes
+                 (id INTEGER PRIMARY KEY, guild_id INTEGER NOT NULL, vote_group_id INTEGER NOT NULL,
+                 date datetime DEFAULT current_timestamp, user_id INTEGER NOT NULL,
+                 FOREIGN KEY(guild_id) REFERENCES guilds (id),
+                 FOREIGN KEY (user_id) REFERENCES users (id))''')
     conn.commit()
 
 

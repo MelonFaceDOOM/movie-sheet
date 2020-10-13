@@ -424,7 +424,8 @@ class GroupAnalytics(commands.Cog):
             return await ctx.send(e)
         for message in messages:
             await ctx.send("```" + message + "```")
-        
+
+
 class Research(commands.Cog):
     @commands.command()
     async def random(self, ctx):
@@ -455,16 +456,30 @@ class Research(commands.Cog):
         movie = " ".join(movie)
         messages = await chunk(random_tomato(movie, fresh=0))
         for message in messages:
-            await ctx.send("```"+message+"```")
+            return await ctx.send("```"+message+"```")
             
     @commands.command()
-    async def gamespot(self, ctx):
+    async def gamespot(self, ctx, *board_name):
         """Return a random rotten GS post."""
-        author, time, post_link, post = random_gamespot_post()
-        message = author + " - " + time + "\n" + post + "\n\n" + "read more:\n" + post_link
-        messages = await chunk(message)
-        for message in messages:
-            await ctx.send("```"+message+"```")
+        votes_required_to_self_destruct = 7
+        guild_id = ctx.message.guild.id
+        self_destructed = await mnb.self_destructed(guild_id, votes_required=votes_required_to_self_destruct)
+        if self_destructed:
+            return await ctx.send("```This feature is gone forever.```"
+                                  )
+        board_name = " ".join(board_name)
+        # special self destruct command
+        if board_name == "self destruct":
+            discord_id = ctx.message.author.id
+            message = await mnb.vote_gamespot_self_destruct(ctx=ctx, guild_id=guild_id, user_id=discord_id,
+                                                            votes_required=votes_required_to_self_destruct)
+            await ctx.send("```" + message + "```")
+        else:
+            author, time, post_link, post = random_gamespot_post(board_name=board_name)
+            message = author + " - " + time + "\n" + post + "\n\n" + "read more:\n" + post_link
+            messages = await chunk(message)
+            for message in messages:
+                await ctx.send("```"+message+"```")
 
 
 bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"),

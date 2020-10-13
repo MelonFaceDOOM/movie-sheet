@@ -1,11 +1,10 @@
 import sqlite3
 import random
-from datetime import datetime
+import datetime
 from matching import find_closest_match
 from melon_discord import get_guild_user_info, user_to_id, id_to_user, id_from_mention
 
-
-# TODO: separate sql stuff and add the pragma foreign_keys true thing
+# TODO: pragma foreign_keys true thing
 
 
 class movieNightBot:
@@ -220,7 +219,7 @@ class movieNightBot:
         if not existing_movie:
             raise ValueError(f'The movie "{movie_title}" could not be found.')
         c = self.conn.cursor()
-        current_time = datetime.now()
+        current_time = datetime.datetime.now()
         c.execute('''UPDATE movies SET watched = ?, date_watched = ?
                      WHERE guild_id = ? AND title = ?''',
                   (1, current_time, guild_id, movie_title))
@@ -720,3 +719,55 @@ class movieNightBot:
         movies = c.fetchall()
         movies = [m['title'] for m in movies]
         return random.choice(movies)
+
+    async def vote_gamespot_self_destruct(self, ctx, guild_id, user_id, votes_required):
+        current_time = datetime.datetime.utcnow()
+        time_range = datetime.timedelta(minutes=5)
+        c = self.conn.cursor()
+        c.execute('''SELECT * FROM gamespot_self_destruct_votes
+                     WHERE guild_id = ? AND vote_group_id=(SELECT MAX(vote_group_id) FROM gamespot_self_destruct_votes)
+                     ORDER BY datetime(date) DESC''',
+                  (guild_id,))
+        votes = c.fetchall()
+        if not votes:
+            vote_group_id = 1
+            c.execute('''INSERT INTO gamespot_self_destruct_votes (guild_id, user_id, vote_group_id) values (?,?,?)''',
+                      (guild_id, user_id, vote_group_id))
+            self.conn.commit()
+            message = "You have voted for self-destruction! Currently at 1 vote."
+        else:
+            vote_group_start_time = votes[-1]['date']
+            vote_group_start_time = datetime.datetime.strptime(vote_group_start_time, '%Y-%m-%d %H:%M:%S')
+            if current_time - vote_group_start_time > time_range:
+                vote_group_id = votes[0]['vote_group_id'] + 1
+                c.execute('''INSERT INTO gamespot_self_destruct_votes (guild_id, user_id, vote_group_id) values (?,?,?)''',
+                          (guild_id, user_id, vote_group_id))
+                self.conn.commit()
+                message = f"Apologies, your previous self-destruction request only got {len(votes)} votes. A new request has been lodged with 1 vote."
+            else:
+                voter_ids = [vote['user_id'] for vote in votes]
+                if user_id in voter_ids:
+                    message = "You have already voted in favor of self-destruction."
+                else:
+                    vote_group_id = votes[0]['vote_group_id']
+                    c.execute('''INSERT INTO gamespot_self_destruct_votes (guild_id, user_id, vote_group_id) values (?,?,?)''',
+                              (guild_id, user_id, vote_group_id))
+                    self.conn.commit()
+                    total_votes = len(votes) + 1
+                    if total_votes >= votes_required:
+                        message = f"Say hello, wave goodbye."
+                    else:
+                        message = f"You have voted for self-destruction! There are {total_votes} votes."
+        return message
+
+    async def self_destructed(self, guild_id, votes_required):
+        c = self.conn.cursor()
+        c.execute('''SELECT * FROM gamespot_self_destruct_votes
+                             WHERE guild_id = ? AND vote_group_id=(SELECT MAX(vote_group_id) FROM gamespot_self_destruct_votes)
+                             ''',
+                  (guild_id,))
+        votes = c.fetchall()
+        if len(votes) >= votes_required:
+            return True
+        else:
+            return False

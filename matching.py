@@ -2,7 +2,11 @@ class Substrings:
     def __init__(self, term):
         self.name = term.lower()
         self.substrings = self.get_substrings()
-        self.max = max(self.substrings.keys())
+        # TODO: test this change
+        if self.substrings:
+            self.max = max(self.substrings.keys())
+        else:
+            self.max = 0
     
     def get_substrings(self):
         substrings = {}

@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="5877a44c-0038-4b00-a7ba-ef2d397d9c5e" name="Default Changelist" comment="" />
+    <list default="true" id="5877a44c-0038-4b00-a7ba-ef2d397d9c5e" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/movie-sheet.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/movie-sheet.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/make_melonbot_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/make_melonbot_db.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/matching.py" beforeDir="false" afterPath="$PROJECT_DIR$/matching.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/movienight_bot.py" beforeDir="false" afterPath="$PROJECT_DIR$/movienight_bot.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scraping/gamespot.py" beforeDir="false" afterPath="$PROJECT_DIR$/scraping/gamespot.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scraping/google.py" beforeDir="false" afterPath="$PROJECT_DIR$/scraping/google.py" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -9,14 +18,14 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.47384617">
+    <splitter split-orientation="horizontal" split-proportion="0.48876405">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/movienight_bot.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="551">
-                  <caret line="68" column="41" selection-start-line="68" selection-start-column="41" selection-end-line="68" selection-end-column="41" />
+                <state relative-caret-position="291">
+                  <caret line="730" column="28" selection-start-line="730" selection-start-column="28" selection-end-line="730" selection-end-column="28" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
                   </folding>
@@ -25,9 +34,22 @@
             </entry>
           </file>
           <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/scraping/gamespot.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="-1208">
+                  <caret line="4" selection-start-line="4" selection-end-line="4" />
+                  <folding>
+                    <element signature="e#0#15#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/scraping/rotten_tomatoes.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state>
+                <state relative-caret-position="848">
+                  <caret line="110" column="17" lean-forward="true" selection-start-line="110" selection-start-column="17" selection-end-line="110" selection-end-column="17" />
                   <folding>
                     <element signature="e#0#15#0" expanded="true" />
                   </folding>
@@ -42,8 +64,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/bot.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="550">
-                  <caret line="460" column="31" selection-start-line="460" selection-start-column="31" selection-end-line="460" selection-end-column="31" />
+                <state relative-caret-position="286">
+                  <caret line="484" column="63" selection-start-line="484" selection-start-column="63" selection-end-line="484" selection-end-column="63" />
                   <folding>
                     <element signature="e#0#39#0" expanded="true" />
                   </folding>
@@ -52,9 +74,21 @@
             </entry>
           </file>
           <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/scraping/google.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="288">
+                  <caret line="16" column="8" selection-start-line="16" selection-start-column="8" selection-end-line="16" selection-end-column="8" />
+                  <folding>
+                    <element signature="e#1#44#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/melon_discord.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="216">
+                <state relative-caret-position="234">
                   <caret line="13" column="30" selection-start-line="13" selection-start-column="30" selection-end-line="13" selection-end-column="30" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
@@ -66,8 +100,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/matching.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="594">
-                  <caret line="33" selection-start-line="33" selection-end-line="33" />
+                <state relative-caret-position="576">
+                  <caret line="32" column="16" selection-start-line="32" selection-start-column="16" selection-end-line="32" selection-end-column="16" />
                 </state>
               </provider>
             </entry>
@@ -75,8 +109,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/make_melonbot_db.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="180">
-                  <caret line="10" column="95" selection-start-line="10" selection-start-column="95" selection-end-line="10" selection-end-column="95" />
+                <state relative-caret-position="749">
+                  <caret line="55" column="83" lean-forward="true" selection-start-line="55" selection-start-column="83" selection-end-line="55" selection-end-column="83" />
                 </state>
               </provider>
             </entry>
@@ -106,11 +140,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>movie_title</find>
-      <find>ratings_for_c</find>
-      <find>db_file</find>
-      <find>users</find>
-      <find>find_clos</find>
       <find>find_closest_match</find>
       <find>guild</find>
       <find>id_to</find>
@@ -136,6 +165,11 @@
       <find>order</find>
       <find>update</find>
       <find>watch</find>
+      <find>max</find>
+      <find>sort</find>
+      <find>order by</find>
+      <find>search</find>
+      <find>datetime</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -151,26 +185,29 @@
         <option value="$PROJECT_DIR$/movie_sheet.py" />
         <option value="$PROJECT_DIR$/make_server_db.py" />
         <option value="$PROJECT_DIR$/scheduling_bot.py" />
-        <option value="$PROJECT_DIR$/matching.py" />
-        <option value="$PROJECT_DIR$/make_melonbot_db.py" />
         <option value="$PROJECT_DIR$/tests.py" />
         <option value="$PROJECT_DIR$/melon_discord.py" />
-        <option value="$PROJECT_DIR$/bot.py" />
+        <option value="$PROJECT_DIR$/matching.py" />
+        <option value="$PROJECT_DIR$/scraping/google.py" />
+        <option value="$PROJECT_DIR$/make_melonbot_db.py" />
         <option value="$PROJECT_DIR$/movienight_bot.py" />
+        <option value="$PROJECT_DIR$/scraping/gamespot.py" />
+        <option value="$PROJECT_DIR$/bot.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="732" />
-    <option name="y" value="4" />
-    <option name="width" value="2010" />
-    <option name="height" value="1407" />
+    <option name="x" value="1396" />
+    <option name="y" value="194" />
+    <option name="width" value="1822" />
+    <option name="height" value="1084" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -178,17 +215,21 @@
               <item name="movie-sheet" type="b2602c69:ProjectViewProjectNode" />
               <item name="movie-sheet" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="movie-sheet" type="b2602c69:ProjectViewProjectNode" />
+              <item name="movie-sheet" type="462c0819:PsiDirectoryNode" />
+              <item name="scraping" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -256,9 +297,10 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="732" y="4" width="2010" height="1407" extended-state="0" />
+    <frame x="1396" y="194" width="1822" height="1084" extended-state="0" />
+    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.12626775" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.10201794" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -269,9 +311,9 @@
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.15306123" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.32967034" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="8" sideWeight="0.49492902" visible="true" weight="0.23704867" />
-      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.505071" side_tool="true" visible="true" weight="0.23704867" />
-      <window_info anchor="bottom" id="Python Console" order="10" sideWeight="0.4989858" weight="0.32967034" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="8" sideWeight="0.492713" visible="true" weight="0.23659305" />
+      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5016816" side_tool="true" weight="0.32912722" />
+      <window_info anchor="bottom" id="Python Console" order="10" sideWeight="0.49831837" weight="0.32912722" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -364,49 +406,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/scraping/rotten_tomatoes.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <folding>
-            <element signature="e#0#15#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/bot.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="550">
-          <caret line="460" column="31" selection-start-line="460" selection-start-column="31" selection-end-line="460" selection-end-column="31" />
-          <folding>
-            <element signature="e#0#39#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/melon_discord.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="216">
-          <caret line="13" column="30" selection-start-line="13" selection-start-column="30" selection-end-line="13" selection-end-column="30" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/matching.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="594">
-          <caret line="33" selection-start-line="33" selection-end-line="33" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/make_melonbot_db.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="10" column="95" selection-start-line="10" selection-start-column="95" selection-end-line="10" selection-end-column="95" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/scheduling_bot.py">
       <provider selected="true" editor-type-id="text-editor">
         <state>
@@ -417,12 +416,76 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/matching.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="576">
+          <caret line="32" column="16" selection-start-line="32" selection-start-column="16" selection-end-line="32" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/melon_discord.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="234">
+          <caret line="13" column="30" selection-start-line="13" selection-start-column="30" selection-end-line="13" selection-end-column="30" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scraping/google.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="288">
+          <caret line="16" column="8" selection-start-line="16" selection-start-column="8" selection-end-line="16" selection-end-column="8" />
+          <folding>
+            <element signature="e#1#44#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scraping/rotten_tomatoes.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="848">
+          <caret line="110" column="17" lean-forward="true" selection-start-line="110" selection-start-column="17" selection-end-line="110" selection-end-column="17" />
+          <folding>
+            <element signature="e#0#15#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/make_melonbot_db.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="749">
+          <caret line="55" column="83" lean-forward="true" selection-start-line="55" selection-start-column="83" selection-end-line="55" selection-end-column="83" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scraping/gamespot.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1208">
+          <caret line="4" selection-start-line="4" selection-end-line="4" />
+          <folding>
+            <element signature="e#0#15#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/movienight_bot.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="551">
-          <caret line="68" column="41" selection-start-line="68" selection-start-column="41" selection-end-line="68" selection-end-column="41" />
+        <state relative-caret-position="291">
+          <caret line="730" column="28" selection-start-line="730" selection-start-column="28" selection-end-line="730" selection-end-column="28" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bot.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="286">
+          <caret line="484" column="63" selection-start-line="484" selection-start-column="63" selection-end-line="484" selection-end-column="63" />
+          <folding>
+            <element signature="e#0#39#0" expanded="true" />
           </folding>
         </state>
       </provider>
