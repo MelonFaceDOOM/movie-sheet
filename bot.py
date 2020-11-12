@@ -2,6 +2,7 @@ from scraping.ebert import ebert_lookup
 from scraping.rotten_tomatoes import random_tomato
 from scraping.gamespot import random_gamespot_post
 from discord.ext import commands
+from discord import Intents
 from make_melonbot_db import make_db
 from movienight_bot import movieNightBot
 from config import bot_token
@@ -184,7 +185,7 @@ class Core(commands.Cog):
 
     @commands.command()
     async def reviews_from(self, ctx, *name_or_mention):
-        """Finds reviews for a movie. Returns one specific review if reviwer is supplied as well."""
+        """Finds reviews from a reviewer."""
         name_or_mention = " ".join(name_or_mention)
         discord_id = await user_to_id(ctx, name_or_mention)
         if not discord_id:
@@ -482,8 +483,11 @@ class Research(commands.Cog):
                 await ctx.send("```"+message+"```")
 
 
-bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"),
+intents = Intents.default()
+intents.members = True
+bot = commands.Bot(command_prefix=commands.when_mentioned_or("?"),
                    case_insensitive=True,
+                   intents=intents,
                    description='ur fav movienight companion.\n!register <nick> to get started!!!')
 
 
