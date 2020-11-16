@@ -259,11 +259,11 @@ class movieNightBot:
         rows = c.fetchall()
         ratings_count = len(rows)
 
-        # if ratings_count == 0:
-        #     c.execute('''UPDATE movies SET watched = ?, date_watched = ?
-        #                  WHERE guild_id = ? AND title = ?''',
-        #               (0, None, guild_id, movie_title))
-        #     self.conn.commit()
+        if ratings_count == 0:
+            c.execute('''UPDATE movies SET watched = ?, date_watched = ?
+                         WHERE guild_id = ? AND title = ?''',
+                      (0, None, guild_id, movie_title))
+            self.conn.commit()
 
     async def review_movie(self, guild_id, movie_title, reviewer_user_id, review_text):
         existing_movie = await self.find_exact_movie(guild_id, movie_title)
