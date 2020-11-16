@@ -163,7 +163,8 @@ class movieNightBot:
                         endorser = str(row['user_id'])
                     message += f"{endorser}\n"
                 tags = await self.find_tags(guild_id=guild_id, movie_title=best_match)
-                message += f"\ntags:{', '.join(tags)}"
+                if tags:
+                    message += f"\ntags:{', '.join(tags)}"
                 return message
 
         if not best_match:
@@ -251,6 +252,18 @@ class movieNightBot:
                      movie_id IN (SELECT id FROM movies WHERE guild_id = ? AND title= ?)''',
                   (guild_id, rater_user_id, guild_id, movie_title))
         self.conn.commit()
+        c.execute('''SELECT ratings.rating FROM ratings 
+                     INNER JOIN movies ON ratings.movie_id = movies.id
+                     WHERE ratings.guild_id = ? AND movies.title = ?''',
+                  (guild_id, movie_title))
+        rows = c.fetchall()
+        ratings_count = len(rows)
+
+        # if ratings_count == 0:
+        #     c.execute('''UPDATE movies SET watched = ?, date_watched = ?
+        #                  WHERE guild_id = ? AND title = ?''',
+        #               (0, None, guild_id, movie_title))
+        #     self.conn.commit()
 
     async def review_movie(self, guild_id, movie_title, reviewer_user_id, review_text):
         existing_movie = await self.find_exact_movie(guild_id, movie_title)
@@ -763,7 +776,7 @@ class movieNightBot:
     async def self_destructed(self, guild_id, votes_required):
         c = self.conn.cursor()
         c.execute('''SELECT * FROM gamespot_self_destruct_votes
-                             WHERE guild_id = ? AND vote_group_id=(SELECT MAX(vote_group_id) FROM gamespot_self_destruct_votes)
+                     WHERE guild_id = ? AND vote_group_id=(SELECT MAX(vote_group_id) FROM gamespot_self_destruct_votes)
                              ''',
                   (guild_id,))
         votes = c.fetchall()
@@ -771,3 +784,18 @@ class movieNightBot:
             return True
         else:
             return False
+
+    async def bullshit(self):
+        c = self.conn.cursor()
+        c.execute('''SELECT id FROM movies''')
+        rows = c.fetchall()
+        movie_ids = [row['id'] for row in rows]
+        for movie_id in movie_ids:
+            c.execute('''SELECT rating FROM ratings WHERE movie_id = ?''',
+                      (movie_id,))
+            rows = c.fetchall()
+            if not rows:
+                c.execute('''UPDATE movies SET watched = ?, date_watched = ?
+                             WHERE id = ?''',
+                          (0, None, movie_id))
+        self.conn.commit()

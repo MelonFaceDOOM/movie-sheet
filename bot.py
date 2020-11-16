@@ -482,10 +482,19 @@ class Research(commands.Cog):
             for message in messages:
                 await ctx.send("```"+message+"```")
 
+    @commands.command()
+    async def bullshit(self, ctx):
+        if ctx.message.author.id != 117340965760532487:
+            return await ctx.send("only jacob can call bullshit")
+        else:
+            await mnb.bullshit()
+            return await ctx.send("congratulations")
+
+
 
 intents = Intents.default()
 intents.members = True
-bot = commands.Bot(command_prefix=commands.when_mentioned_or("?"),
+bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"),
                    case_insensitive=True,
                    intents=intents,
                    description='ur fav movienight companion.\n!register <nick> to get started!!!')
