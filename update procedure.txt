@@ -1,7 +1,7 @@
 make changes and test here.
 change call symbol to ! in bot.py
 git add .
-git commit -m
+git commit -m "message"
 git push origin master
 log into ubuntu-melly vm
 docker-machine ssh melly
@@ -13,3 +13,4 @@ git pull origin master
 source venv/bin/activate
 pip install -r requirements.txt
 nohup python bot.py &
+ctrl+d to close ssh

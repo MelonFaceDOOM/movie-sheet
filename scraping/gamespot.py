@@ -48,9 +48,9 @@ def get_random_post(directory=None):
         thread_page_link = get_random_thread_page(profile_link)  # actually links to profile,
         # but it can be treated the same
 
-    post = get_longest_post(thread_page_link)
+    post = get_post(thread_page_link)
     if not post:
-        return get_random_post(directory=directory)
+        raise ValueError(f"couldn't find a post on page {thread_page_link}")
     return post
 
 
@@ -132,30 +132,56 @@ def extract_info_from_post(post_element):
     time = post_element.xpath('.//time')[0].get('title')
     post_link = post_element.xpath('.//div[@class="message-title"]/a')[0].get('href')
     post_link = standardize_url(base_url, post_link)
+    post_link = post_link.strip('/')  # a slash at the end of the url breaks the js post-finding function
 
+    # some posts have all text simply immediately inside the article
     body = post_element.xpath('.//article[contains(@class, "message-content")]')[0].text
+
+    # if not, the take should be in any number of p elements. unfortunately, so will quoted text,
+    # it isn't clear how to differentiate the two scenarios
     if not body:
-        lines = post_element.xpath('.//blockquote/following-sibling::p')
-        if not lines:
-            lines = post_element.xpath('.//p')
-        if not lines:
-            body = post_element.text
-        else:
-            body = [line.text for line in lines if line.text]
-            body = "\n".join(body)
+        # main quoted text is found in blockquote, so step 1 is to skip over this.
+        # note there can be more quoted text outside of it
+        p_elements = post_element.xpath('.//blockquote/following-sibling::p')
+        if not p_elements:
+            # if no blockquote was found, just collect all p elements.
+            p_elements = post_element.xpath('.//p')
+        # we should have p_elements, and now need to extract text from them
+        body = [drill_till_text_found(p_element) for p_element in p_elements]
+        body = "\n".join(body)
+    body = body.strip()
     if not body:
-        body = ""
+        body = str(html.tostring(post_element)) # fuck it, just return the raw html code
     return author, time, post_link, body
 
 
-def get_longest_post(page_link):
+def drill_till_text_found(html_element):
+    """will keep looking into the first next element until text is found, or the end is reached."""
+    extracted_text = html_element.text
+    child = html_element
+    while not extracted_text:
+        child = child.xpath("/*")
+        if not child:
+            break  # no child found
+        else:
+            child = child[0]
+            extracted_text = child.text
+    if not extracted_text:
+        extracted_text = ""
+    return extracted_text
+
+
+def get_post(page_link, get_longest_post=False):
     post_elements = find_posts_in_page(page_link)
     posts = []
     for post_element in post_elements:
         post = extract_info_from_post(post_element)
         posts.append(post)
     if posts:
-        posts.sort(key=lambda x: len(x[3]), reverse=True)
-        return posts[0]
+        if get_longest_post:
+            posts.sort(key=lambda x: len(x[3]), reverse=True)
+            return posts[0]
+        else:
+            return random.choice(posts)
     else:
         return []
