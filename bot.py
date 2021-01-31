@@ -496,7 +496,7 @@ class Research(commands.Cog):
 
 intents = Intents.default()
 intents.members = True
-bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"),
+bot = commands.Bot(command_prefix=commands.when_mentioned_or("?"),
                    case_insensitive=True,
                    intents=intents,
                    description='ur fav movienight companion.\n!register <nick> to get started!!!')

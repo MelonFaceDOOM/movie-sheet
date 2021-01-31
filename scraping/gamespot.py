@@ -137,8 +137,14 @@ def extract_info_from_post(post_element):
     # some posts have all text simply immediately inside the article
     body = post_element.xpath('.//article[contains(@class, "message-content")]')[0].text
 
-    # if not, the take should be in any number of p elements. unfortunately, so will quoted text,
-    # it isn't clear how to differentiate the two scenarios
+    if not body:
+        # another potential format: this captures straight text following a blockquote
+        body = post_element.xpath('.//blockquote')
+        if body:
+            body = body[0].tail
+
+    # if neither of the above worked, the post should be in any number of p elements.
+    # unfortunately, so will quoted text, and it isn't clear how to differentiate the two scenarios.
     if not body:
         # main quoted text is found in blockquote, so step 1 is to skip over this.
         # note there can be more quoted text outside of it
@@ -151,7 +157,7 @@ def extract_info_from_post(post_element):
         body = "\n".join(body)
     body = body.strip()
     if not body:
-        body = str(html.tostring(post_element)) # fuck it, just return the raw html code
+        body = str(html.tostring(post_element))  # fuck it, just return the raw html code
     return author, time, post_link, body
 
 
