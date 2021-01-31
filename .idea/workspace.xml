@@ -2,7 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5877a44c-0038-4b00-a7ba-ef2d397d9c5e" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/movienight_bot.py" beforeDir="false" afterPath="$PROJECT_DIR$/movienight_bot.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scraping/gamespot.py" beforeDir="false" afterPath="$PROJECT_DIR$/scraping/gamespot.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -11,14 +14,14 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.48876405">
+    <splitter split-orientation="horizontal" split-proportion="0.5302857">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/movienight_bot.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="526">
-                  <caret line="261" selection-start-line="261" selection-end-line="265" selection-end-column="30" />
+                <state relative-caret-position="-36">
+                  <caret line="675" column="12" selection-start-line="675" selection-start-column="12" selection-end-line="675" selection-end-column="12" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
                   </folding>
@@ -26,14 +29,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/scraping/gamespot.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="18">
-                  <caret line="4" selection-start-line="4" selection-end-line="4" />
-                  <folding>
-                    <element signature="e#0#15#0" expanded="true" />
-                  </folding>
+                <state relative-caret-position="360">
+                  <caret line="66" column="37" lean-forward="true" selection-start-line="66" selection-start-column="37" selection-end-line="66" selection-end-column="37" />
                 </state>
               </provider>
             </entry>
@@ -66,8 +66,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/bot.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="485">
-                  <caret line="496" column="63" selection-start-line="496" selection-start-column="63" selection-end-line="496" selection-end-column="63" />
+                <state relative-caret-position="617">
+                  <caret line="498" column="63" selection-start-line="498" selection-start-column="63" selection-end-line="498" selection-end-column="63" />
                   <folding>
                     <element signature="e#0#39#0" expanded="true" />
                   </folding>
@@ -179,18 +179,18 @@
         <option value="$PROJECT_DIR$/matching.py" />
         <option value="$PROJECT_DIR$/scraping/google.py" />
         <option value="$PROJECT_DIR$/make_melonbot_db.py" />
-        <option value="$PROJECT_DIR$/scraping/gamespot.py" />
         <option value="$PROJECT_DIR$/melon_discord.py" />
-        <option value="$PROJECT_DIR$/bot.py" />
         <option value="$PROJECT_DIR$/movienight_bot.py" />
+        <option value="$PROJECT_DIR$/scraping/gamespot.py" />
+        <option value="$PROJECT_DIR$/bot.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="1276" />
-    <option name="y" value="12" />
-    <option name="width" value="1808" />
-    <option name="height" value="1300" />
+    <option name="x" value="1453" />
+    <option name="y" value="25" />
+    <option name="width" value="1970" />
+    <option name="height" value="1407" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -287,10 +287,10 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="1276" y="12" width="1808" height="1300" extended-state="0" />
+    <frame x="1453" y="25" width="1970" height="1407" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.10282486" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.0942029" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -301,7 +301,7 @@
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.15306123" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.32967034" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="8" sideWeight="0.492713" visible="true" weight="0.19194517" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="8" sideWeight="0.492713" visible="true" weight="0.2833595" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5016816" side_tool="true" weight="0.32912722" />
       <window_info anchor="bottom" id="Python Console" order="10" sideWeight="0.49831837" weight="0.32912722" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -396,16 +396,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/scraping/gamespot.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="18">
-          <caret line="4" selection-start-line="4" selection-end-line="4" />
-          <folding>
-            <element signature="e#0#15#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/scraping/rotten_tomatoes.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1908">
@@ -457,22 +447,29 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/bot.py">
+    <entry file="file://$PROJECT_DIR$/movienight_bot.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="485">
-          <caret line="496" column="63" selection-start-line="496" selection-start-column="63" selection-end-line="496" selection-end-column="63" />
+        <state relative-caret-position="-36">
+          <caret line="675" column="12" selection-start-line="675" selection-start-column="12" selection-end-line="675" selection-end-column="12" />
           <folding>
-            <element signature="e#0#39#0" expanded="true" />
+            <element signature="e#0#14#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/movienight_bot.py">
+    <entry file="file://$PROJECT_DIR$/scraping/gamespot.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="526">
-          <caret line="261" selection-start-line="261" selection-end-line="265" selection-end-column="30" />
+        <state relative-caret-position="360">
+          <caret line="66" column="37" lean-forward="true" selection-start-line="66" selection-start-column="37" selection-end-line="66" selection-end-column="37" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bot.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="617">
+          <caret line="498" column="63" selection-start-line="498" selection-start-column="63" selection-end-line="498" selection-end-column="63" />
           <folding>
-            <element signature="e#0#14#0" expanded="true" />
+            <element signature="e#0#39#0" expanded="true" />
           </folding>
         </state>
       </provider>

@@ -686,8 +686,9 @@ class movieNightBot:
         message = f"------ OVERALL STANDINGS ------\n"
         i = 1
         for chooser, n_movies, average in choosers_moviecount_averagerating:
-            average = '{:02.1f}'.format(float(average))
-            message += f"{i}. {chooser} ({n_movies}) - {average}\n"
+            if n_movies > 0:
+                average = '{:02.1f}'.format(float(average))
+                message += f"{i}. {chooser} ({n_movies}) - {average}\n"
             i += 1
         return message
 

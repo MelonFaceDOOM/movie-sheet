@@ -1,6 +1,6 @@
 from scraping.ebert import ebert_lookup
 from scraping.rotten_tomatoes import random_tomato
-from scraping.gamespot import random_gamespot_post
+from scraping.gamespot import get_random_post
 from discord.ext import commands
 from discord import Intents
 from make_melonbot_db import make_db
@@ -460,23 +460,26 @@ class Research(commands.Cog):
             return await ctx.send("```"+message+"```")
             
     @commands.command()
-    async def gamespot(self, ctx, *board_name):
+    async def gamespot(self, ctx, *directory):
         """Return a random rotten GS post."""
-        votes_required_to_self_destruct = 7
+        votes_required_to_self_destruct = 5
         guild_id = ctx.message.guild.id
         self_destructed = await mnb.self_destructed(guild_id, votes_required=votes_required_to_self_destruct)
         if self_destructed:
             return await ctx.send("```This feature is gone forever.```"
                                   )
-        board_name = " ".join(board_name)
+        directory = " ".join(directory)
         # special self destruct command
-        if board_name == "self destruct":
+        if directory == "self destruct":
             discord_id = ctx.message.author.id
             message = await mnb.vote_gamespot_self_destruct(ctx=ctx, guild_id=guild_id, user_id=discord_id,
                                                             votes_required=votes_required_to_self_destruct)
             await ctx.send("```" + message + "```")
         else:
-            author, time, post_link, post = random_gamespot_post(board_name=board_name)
+            try:
+                author, time, post_link, post = get_random_post(directory=directory)
+            except ValueError as e:
+                return await ctx.send(e)
             message = author + " - " + time + "\n" + post + "\n\n" + "read more:\n" + post_link
             messages = await chunk(message)
             for message in messages:
@@ -489,7 +492,6 @@ class Research(commands.Cog):
         else:
             await mnb.bullshit()
             return await ctx.send("congratulations")
-
 
 
 intents = Intents.default()
