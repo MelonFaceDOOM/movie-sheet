@@ -659,38 +659,68 @@ class movieNightBot:
 
     async def standings(self, ctx, guild_id):
         c = self.conn.cursor()
-        c.execute('''SELECT id FROM users WHERE guild_id = ?''', (guild_id, ))
-        user_ids = c.fetchall()
-        choosers_moviecount_averagerating = []
-        for row in user_ids:
-            user_id = row['id']
-            chooser_name = await id_to_user(ctx, user_id)
-            if not chooser_name:
-                chooser_name = str(user_id)
-            c.execute('''SELECT movies.title, ratings.rating FROM ratings 
-                         INNER JOIN movies ON ratings.movie_id = movies.id
-                         WHERE movies.guild_id = ? AND movies.user_id = ? AND watched = ?''',
-                      (guild_id, user_id, 1))
-            movies_ratings = c.fetchall()
-            movies = [row['title'] for row in movies_ratings]  # movies repeated for each time rated
-            unique_movies = set(movies)
-            movie_count = len(unique_movies)
-            ratings_received = [row['rating'] for row in movies_ratings]
-            if ratings_received:
-                average_rating = sum(ratings_received) / len(ratings_received)
+        c.execute('''SELECT movies.user_id, ratings.rating FROM ratings
+                     INNER JOIN movies ON ratings.movie_id = movies.id
+                     WHERE movies.guild_id = ? AND movies.watched = ?''',
+                  (guild_id, 1))
+        choosers_ratings = c.fetchall()
+        choosers_ratings.sort(key=lambda x: str(x['user_id']))
+        choosers_averagerating_moviecount = []
+        ratings_for_current_chooser = []
+        for cr in choosers_ratings:
+            if len(ratings_for_current_chooser) == 0:
+                current_chooser = cr['user_id']
+                ratings_for_current_chooser = [cr['rating']]
+            elif cr['user_id'] == current_chooser:
+                ratings_for_current_chooser.append(cr['rating'])
             else:
-                average_rating = 0
-            choosers_moviecount_averagerating.append([chooser_name, movie_count, average_rating])
-
-        choosers_moviecount_averagerating.sort(key=lambda x: float(x[2]), reverse=True)
+                average_rating = sum(ratings_for_current_chooser) / len(ratings_for_current_chooser)
+                choosers_averagerating_moviecount.append([current_chooser, average_rating, len(ratings_for_current_chooser)])
+                current_chooser = cr['user_id']
+                ratings_for_current_chooser = [cr['rating']]
+        average_rating = sum(ratings_for_current_chooser) / len(ratings_for_current_chooser)
+        choosers_averagerating_moviecount.append([current_chooser, average_rating, len(ratings_for_current_chooser)])
+        choosers_averagerating_moviecount.sort(key=lambda x: float(x[1]), reverse=True)
         message = f"------ OVERALL STANDINGS ------\n"
         i = 1
-        for chooser, n_movies, average in choosers_moviecount_averagerating:
-            if n_movies > 0:
-                average = '{:02.1f}'.format(float(average))
-                message += f"{i}. {chooser} ({n_movies}) - {average}\n"
+        for chooser, average_rating, movie_count in choosers_averagerating_moviecount:
+            if movie_count > 0:
+                chooser_name = await id_to_user(ctx, chooser)
+                if not chooser_name:
+                    chooser_name = "NAME NOT FOUND EEEEE"
+                average = '{:02.1f}'.format(float(average_rating))
+                message += f"{i}. {chooser_name} ({movie_count}) - {average}\n"
             i += 1
         return message
+        # for row in user_ids:
+        #     user_id = row['id']
+        #     chooser_name = await id_to_user(ctx, user_id)
+        #     if not chooser_name:
+        #         chooser_name = str(user_id)
+        #     c.execute('''SELECT movies.title, ratings.rating FROM ratings
+        #                  INNER JOIN movies ON ratings.movie_id = movies.id
+        #                  WHERE movies.guild_id = ? AND movies.user_id = ? AND watched = ?''',
+        #               (guild_id, user_id, 1))
+        #     movies_ratings = c.fetchall()
+        #     movies = [row['title'] for row in movies_ratings]  # movies repeated for each time rated
+        #     unique_movies = set(movies)
+        #     movie_count = len(unique_movies)
+        #     ratings_received = [row['rating'] for row in movies_ratings]
+        #     if ratings_received:
+        #         average_rating = sum(ratings_received) / len(ratings_received)
+        #     else:
+        #         average_rating = 0
+        #     choosers_moviecount_averagerating.append([chooser_name, movie_count, average_rating])
+        #
+        # choosers_moviecount_averagerating.sort(key=lambda x: float(x[2]), reverse=True)
+        # message = f"------ OVERALL STANDINGS ------\n"
+        # i = 1
+        # for chooser, n_movies, average in choosers_moviecount_averagerating:
+        #     if n_movies > 0:
+        #         average = '{:02.1f}'.format(float(average))
+        #         message += f"{i}. {chooser} ({n_movies}) - {average}\n"
+        #     i += 1
+        # return message
 
     async def top_ratings(self, ctx, guild_id, top=True, n=10):
         """bottom ratings if top=False"""
