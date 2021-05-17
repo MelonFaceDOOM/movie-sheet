@@ -90,9 +90,8 @@ class movieNightBot:
             suggestions = [row['title'] for row in rows]
             c.execute('''SELECT ratings.rating FROM ratings
                          INNER JOIN movies ON ratings.movie_id = movies.id
-                         INNER JOIN users ON movies.user_id = users.id
-                         WHERE ratings.guild_id = ? AND users.id = ? AND movies.watched = ?''',
-                    (guild_id, user_id, 1))
+                         WHERE ratings.guild_id = ? AND movies.user_id = ? AND movies.watched = ?''',
+                      (guild_id, user_id, 1))
             rows = c.fetchall()
             ratings_received = [row['rating'] for row in rows]
             c.execute('''SELECT rating FROM ratings WHERE guild_id = ? AND user_id = ?''',
@@ -221,9 +220,14 @@ class movieNightBot:
             raise ValueError(f'The movie "{movie_title}" could not be found.')
         c = self.conn.cursor()
         current_time = datetime.datetime.now()
-        c.execute('''UPDATE movies SET watched = ?, date_watched = ?
-                     WHERE guild_id = ? AND title = ?''',
-                  (1, current_time, guild_id, movie_title))
+        if existing_movie['date_watched']:
+            c.execute('''UPDATE movies SET watched = ?
+                         WHERE guild_id = ? AND title = ?''',
+                      (1, guild_id, movie_title))
+        else:
+            c.execute('''UPDATE movies SET watched = ?, date_watched = ?
+                         WHERE guild_id = ? AND title = ?''',
+                      (1, current_time, guild_id, movie_title))
         c.execute('''SELECT rating FROM ratings where guild_id = ? AND movie_id = ? and user_id = ?''',
                   (guild_id, existing_movie['id'], rater_user_id))
         existing_rating = c.fetchone()
@@ -456,7 +460,7 @@ class movieNightBot:
             message += tag + "\n"
         return message
 
-    async def retrieve_suggestions(self, ctx, guild_id, chooser_user_id):
+    async def retrieve_suggestions(self, ctx, guild_id, chooser_user_id, n=10):
         chooser_name = await id_to_user(ctx, chooser_user_id)
         if not chooser_name:
             chooser_name = str(chooser_user_id)
@@ -465,6 +469,8 @@ class movieNightBot:
                   (guild_id, chooser_user_id, 0))
         suggestions = c.fetchall()
         suggestions = [suggestion['title'] for suggestion in suggestions]
+        if n != 0:
+            suggestions = suggestions[:n]
         if not suggestions:
             raise ValueError(f'No suggestions found for {chooser_name}')
         message = f"------ SUGGESTIONS FROM {chooser_name.upper()} ------\n"
@@ -472,7 +478,7 @@ class movieNightBot:
             message += suggestion + "\n"
         return message
 
-    async def retrieve_endorsements(self, ctx, guild_id, endorser_user_id):
+    async def retrieve_endorsements(self, ctx, guild_id, endorser_user_id, n=10):
         endorser_name = await id_to_user(ctx, endorser_user_id)
         if not endorser_name:
             endorser_name = str(endorser_user_id)
@@ -483,6 +489,8 @@ class movieNightBot:
                   (guild_id, endorser_user_id, 0))
         endorsements = c.fetchall()
         endorsements = [endorsement['title'] for endorsement in endorsements]
+        if n != 0:
+            endorsements = endorsements[:n]
         if not endorsements:
             raise ValueError(f'No endorsements found for {endorser_name}')
         message = f"------ ENDORSEMENTS FROM {endorser_name.upper()} ------\n"
@@ -542,8 +550,8 @@ class movieNightBot:
 
     async def recently_watched_movies(self, ctx, guild_id, n=10):
         c = self.conn.cursor()
-        c.execute('''SELECT movies.title, ratings.movie_id, ratings.rating FROM ratings
-                     INNER JOIN movies ON ratings.movie_id == movies.id
+        c.execute('''SELECT movies.title, ratings.movie_id, movies.date_watched, ratings.rating
+                     FROM ratings INNER JOIN movies ON ratings.movie_id == movies.id
                      WHERE ratings.guild_id = ? AND movies.guild_id = ? AND movies.watched = ?
                      ORDER BY datetime(movies.date_watched) DESC''',
                   (guild_id, guild_id, 1))
@@ -574,21 +582,7 @@ class movieNightBot:
             i += 1
         return message
 
-
-        # c = self.conn.cursor()
-        # c.execute('''SELECT movies.title, ratings.rating FROM movies
-        #              INNER JOIN ratings ON movies.id = ratings.movie_id
-        #              WHERE movies.guild_id = ? AND movies.watched = ?
-        #              ORDER BY movies.date_watched''',
-        #           (guild_id, 1))
-        # movies_watched = c.fetchall()
-        # message = '------ MOST RECENTLY WATCHED MOVIES ------\n'
-        # for movie in movies_watched[:n]:
-        #     rating = '{:02.1f}'.format(movie['rating'])
-        #     message += (f'{movie["title"]} - {rating}\n')
-        # return message
-
-    async def ratings_for_choosers_movies(self, ctx, guild_id, chooser_user_id):
+    async def ratings_for_choosers_movies(self, ctx, guild_id, chooser_user_id, n=10):
         chooser_name = await id_to_user(ctx, chooser_user_id)
         if not chooser_name:
             chooser_name = str(chooser_user_id)
@@ -614,13 +608,16 @@ class movieNightBot:
         overall_average = sum(all_ratings)/len(all_ratings)
         overall_average = '{:02.1f}'.format(overall_average)
         message = f'------ SUBMISSIONS FROM {chooser_name.upper()} ({overall_average}) ------\n'
-        for key in movies_and_ratings.keys():
+        # n == 0 -> get full list
+        if n != 0:
+            movies = list(movies_and_ratings.keys())[:n]
+        for key in movies:
             average = sum(movies_and_ratings[key])/len(movies_and_ratings[key])
             average = '{:02.1f}'.format(average)
             message += f'{key} - {average}\n'
         return message
 
-    async def ratings_from_reviewer(self, ctx, guild_id, rater_user_id):
+    async def ratings_from_reviewer(self, ctx, guild_id, rater_user_id, n=10):
         rater_name = await id_to_user(ctx, rater_user_id)
         if not rater_name:
             rater_name = str(rater_user_id)
@@ -636,13 +633,15 @@ class movieNightBot:
         overall_average = sum(all_ratings_from_rater)/len(all_ratings_from_rater)
         overall_average = '{:02.1f}'.format(overall_average)
         message = f"------ RATINGS FROM {rater_name.upper()} (avg: {overall_average})------\n"
-        rows = sorted(rows, key = lambda row: row['rating'], reverse=True) 
+        rows = sorted(rows, key = lambda row: row['rating'], reverse=True)
+        if n != 0:
+            rows = rows[:n]
         for row in rows:
             rating = '{:02.1f}'.format(row['rating'])
             message += f"{row['title']} - {rating}\n"
         return message
         
-    async def missing_ratings_for_reviewer(self, ctx, guild_id, rater_user_id):
+    async def missing_ratings_for_reviewer(self, ctx, guild_id, rater_user_id, n=10):
         rater_name = await id_to_user(ctx, rater_user_id)
         if not rater_name:
             rater_name = str(rater_user_id)
@@ -652,6 +651,8 @@ class movieNightBot:
                   (guild_id, 1, guild_id, rater_user_id))
         unrated_movies = c.fetchall()
         unrated_movies = [u['title'] for u in unrated_movies]
+        if n != 0:
+            unrated_movies = unrated_movies[:n]
         message = f"------ UNRATED MOVIES FROM {rater_name.upper()} ------\n"
         for movie in unrated_movies:
             message += f"{movie}\n"

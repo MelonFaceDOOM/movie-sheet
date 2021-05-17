@@ -41,4 +41,3 @@ async def id_to_user(ctx, id):
         if id_and_name[0] == id:
             return id_and_name[1]
     return None
-

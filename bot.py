@@ -259,6 +259,12 @@ class IndividualAnalytics(commands.Cog):
     @commands.command()
     async def suggestions(self, ctx, *name_or_mention):
         """Return movies suggested by a chooser."""
+        try:
+            n = int(name_or_mention[-1])
+            name_or_mention = name_or_mention[:-1]
+        except:
+            n = 0
+            pass
         name_or_mention = " ".join(name_or_mention)
         guild_id = ctx.message.guild.id
         if not name_or_mention:
@@ -269,7 +275,7 @@ class IndividualAnalytics(commands.Cog):
                 return await ctx.send(f'User {name_or_mention} not found')
         try:
             messages = await chunk(await mnb.retrieve_suggestions(ctx=ctx, guild_id=guild_id,
-                                                                  chooser_user_id=discord_id))
+                                                                  chooser_user_id=discord_id, n=n))
         except ValueError as e:
             return await ctx.send(e)
         for message in messages:
@@ -278,6 +284,12 @@ class IndividualAnalytics(commands.Cog):
     @commands.command()
     async def endorsements(self, ctx, *name_or_mention):
         """Return movies endorsed by a user."""
+        try:
+            n = int(name_or_mention[-1])
+            name_or_mention = name_or_mention[:-1]
+        except:
+            n = 0
+            pass
         name_or_mention = " ".join(name_or_mention)
         guild_id = ctx.message.guild.id
         if not name_or_mention:
@@ -288,7 +300,7 @@ class IndividualAnalytics(commands.Cog):
                 return await ctx.send(f'User {name_or_mention} not found')
         try:
             messages = await chunk(await mnb.retrieve_endorsements(ctx=ctx, guild_id=guild_id,
-                                                                  endorser_user_id=discord_id))
+                                                                  endorser_user_id=discord_id, n=n))
         except ValueError as e:
             return await ctx.send(e)
         for message in messages:
@@ -297,6 +309,12 @@ class IndividualAnalytics(commands.Cog):
     @commands.command()
     async def chooser(self, ctx, *name_or_mention):
         """Return ratings received by a chooser."""
+        try:
+            n = int(name_or_mention[-1])
+            name_or_mention = name_or_mention[:-1]
+        except:
+            n = 0
+            pass
         guild_id = ctx.message.guild.id
         name_or_mention = " ".join(name_or_mention)
         if not name_or_mention:
@@ -307,7 +325,7 @@ class IndividualAnalytics(commands.Cog):
                 return await ctx.send(f'User {name_or_mention} not found')
         try:
             messages = await chunk(await mnb.ratings_for_choosers_movies(ctx=ctx, guild_id=guild_id,
-                                                                         chooser_user_id=discord_id))
+                                                                         chooser_user_id=discord_id, n=n))
         except ValueError as e:
             return await ctx.send(e)
         for message in messages:
@@ -316,6 +334,12 @@ class IndividualAnalytics(commands.Cog):
     @commands.command()
     async def ratings(self, ctx, *name_or_mention):
         """Return ratings from a reviewer."""
+        try:
+            n = int(name_or_mention[-1])
+            name_or_mention = name_or_mention[:-1]
+        except:
+            n = 0
+            pass
         guild_id = ctx.message.guild.id
         name_or_mention = " ".join(name_or_mention)
         if not name_or_mention:
@@ -326,7 +350,7 @@ class IndividualAnalytics(commands.Cog):
                 return await ctx.send(f'User {name_or_mention} not found')
         try:
             messages = await chunk(await mnb.ratings_from_reviewer(ctx=ctx, guild_id=guild_id,
-                                                                   rater_user_id=discord_id))
+                                                                   rater_user_id=discord_id, n=n))
         except ValueError as e:
             return await ctx.send(e)
         for message in messages:
@@ -335,6 +359,12 @@ class IndividualAnalytics(commands.Cog):
     @commands.command()
     async def unrated(self, ctx, *name_or_mention):
         """Return unrated movies from a reviewer."""
+        try:
+            n = int(name_or_mention[-1])
+            name_or_mention = name_or_mention[:-1]
+        except:
+            n = 0
+            pass
         guild_id = ctx.message.guild.id
         name_or_mention = " ".join(name_or_mention)
         if not name_or_mention:
@@ -345,7 +375,7 @@ class IndividualAnalytics(commands.Cog):
                 return await ctx.send(f'User {name_or_mention} not found')
         try:
             messages = await chunk(await mnb.missing_ratings_for_reviewer(ctx=ctx, guild_id=guild_id,
-                                                                          rater_user_id=discord_id))
+                                                                          rater_user_id=discord_id, n=n))
         except ValueError as e:
             return await ctx.send(e)
         for message in messages:

@@ -11,7 +11,7 @@ If you lose your ssh key, this is what you do:
 9) generate an ssh key on your remote pc
 10) This will create a private key (id_rsa) and a public key (id_rsa.pub).
 11) copy the contents of id_rsa.pub to the server's ssh authorized_keys file with:
- type id_rsa | ssh root@68.183.52.128 "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >>  ~/.ssh/authorized_keys"
+ type id_rsa | ssh root@ip address "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >>  ~/.ssh/authorized_keys"
 12) ctrl+d to exit ssh 
 13) try ssh again; password should no longer be needed.
 14) consider undoing step 6.
