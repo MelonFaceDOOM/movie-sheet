@@ -609,6 +609,7 @@ class movieNightBot:
         overall_average = '{:02.1f}'.format(overall_average)
         message = f'------ SUBMISSIONS FROM {chooser_name.upper()} ({overall_average}) ------\n'
         # n == 0 -> get full list
+        movies = movies_and_ratings.keys()
         if n != 0:
             movies = list(movies_and_ratings.keys())[:n]
         for key in movies:
