@@ -3,8 +3,9 @@ change call symbol to ! in bot.py
 git add .
 git commit -m "message"
 git push origin master
-log into ubuntu-melly vm
-docker-machine ssh melly
+#log into ubuntu-melly vm
+#docker-machine ssh melly
+ssh root@68.183.52.128
 cd movie-sheet
 ps -ef
 find id of python bot.py

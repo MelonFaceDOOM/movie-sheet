@@ -1,10 +1,10 @@
 import sqlite3
 import random
 import datetime
+import statistics
+import math
 from matching import find_closest_match
 from melon_discord import get_guild_user_info, user_to_id, id_to_user, id_from_mention
-
-# TODO: pragma foreign_keys true thing
 
 
 class movieNightBot:
@@ -363,34 +363,34 @@ class movieNightBot:
                 message += f'{reviewer_name} ({rating}): {review_text}\n\n'
         return message
 
-    async def tag_movie(self, guild_id, movie_title, tag_text):
+    async def tag_movie(self, guild_id, movie_title, tags):
         existing_movie = await self.find_exact_movie(guild_id, movie_title)
         if not existing_movie:
             raise ValueError(f'The movie "{movie_title}" could not be found.')
         c = self.conn.cursor()
-        c.execute('''SELECT * FROM tags WHERE guild_id = ? AND movie_id = ? and tag_text = ?''',
-                  (guild_id, existing_movie['id'], tag_text))
-        existing_tag = c.fetchone()
-        if existing_tag:
-            raise ValueError(f'The movie "{movie_title}" has already been tagged as "{tag_text}".')
-        c.execute('''INSERT INTO tags (guild_id, movie_id, tag_text) values (?,?,?)''',
-                  (guild_id, existing_movie['id'], tag_text))
-        self.conn.commit()
+        for tag in tags:
+            c.execute('''SELECT * FROM tags WHERE guild_id = ? AND movie_id = ? and tag_text = ?''',
+                      (guild_id, existing_movie['id'], tag))
+            existing_tag = c.fetchone()
+            if not existing_tag:
+                c.execute('''INSERT INTO tags (guild_id, movie_id, tag_text) values (?,?,?)''',
+                          (guild_id, existing_movie['id'], tag))
+            self.conn.commit()
 
-    async def untag_movie(self, guild_id, movie_title, tag_text):
+    async def untag_movie(self, guild_id, movie_title, tags):
         existing_movie = await self.find_exact_movie(guild_id, movie_title)
         if not existing_movie:
             raise ValueError(f'The movie "{movie_title}" could not be found.')
         c = self.conn.cursor()
-        c.execute('''SELECT * FROM tags WHERE guild_id = ? AND tag_text = ? AND movie_id IN
-                     (SELECT id FROM movies WHERE guild_id = ? AND title = ?)''',
-                  (guild_id, tag_text, guild_id, movie_title))
-        existing_tag = c.fetchone()
-        if not existing_tag:
-            raise ValueError(f'The movie "{movie_title}" is not tagged with "{tag_text}".')
-        c.execute('''DELETE FROM tags WHERE guild_id = ? AND tag_text = ? AND movie_id IN
-                     (SELECT id FROM movies WHERE guild_id = ? AND title = ?)''',
-                  (guild_id, tag_text, guild_id, movie_title))
+        for tag in tags:
+            c.execute('''SELECT * FROM tags WHERE guild_id = ? AND tag_text = ? AND movie_id IN
+                         (SELECT id FROM movies WHERE guild_id = ? AND title = ?)''',
+                      (guild_id, tag, guild_id, movie_title))
+            existing_tag = c.fetchone()
+            if existing_tag:
+                c.execute('''DELETE FROM tags WHERE guild_id = ? AND tag_text = ? AND movie_id IN
+                             (SELECT id FROM movies WHERE guild_id = ? AND title = ?)''',
+                          (guild_id, tag, guild_id, movie_title))
         self.conn.commit()
 
     async def find_movies_with_tags(self, guild_id, tags, mutually_inclusive=True):
@@ -694,35 +694,6 @@ class movieNightBot:
                 message += f"{i}. {chooser_name} ({movie_count}) - {average}\n"
             i += 1
         return message
-        # for row in user_ids:
-        #     user_id = row['id']
-        #     chooser_name = await id_to_user(ctx, user_id)
-        #     if not chooser_name:
-        #         chooser_name = str(user_id)
-        #     c.execute('''SELECT movies.title, ratings.rating FROM ratings
-        #                  INNER JOIN movies ON ratings.movie_id = movies.id
-        #                  WHERE movies.guild_id = ? AND movies.user_id = ? AND watched = ?''',
-        #               (guild_id, user_id, 1))
-        #     movies_ratings = c.fetchall()
-        #     movies = [row['title'] for row in movies_ratings]  # movies repeated for each time rated
-        #     unique_movies = set(movies)
-        #     movie_count = len(unique_movies)
-        #     ratings_received = [row['rating'] for row in movies_ratings]
-        #     if ratings_received:
-        #         average_rating = sum(ratings_received) / len(ratings_received)
-        #     else:
-        #         average_rating = 0
-        #     choosers_moviecount_averagerating.append([chooser_name, movie_count, average_rating])
-        #
-        # choosers_moviecount_averagerating.sort(key=lambda x: float(x[2]), reverse=True)
-        # message = f"------ OVERALL STANDINGS ------\n"
-        # i = 1
-        # for chooser, n_movies, average in choosers_moviecount_averagerating:
-        #     if n_movies > 0:
-        #         average = '{:02.1f}'.format(float(average))
-        #         message += f"{i}. {chooser} ({n_movies}) - {average}\n"
-        #     i += 1
-        # return message
 
     async def top_ratings(self, ctx, guild_id, top=True, n=10):
         """bottom ratings if top=False"""
@@ -733,6 +704,17 @@ class movieNightBot:
                   (guild_id, guild_id))
         movies_ids_ratings = c.fetchall()
         movies_and_ids = [(row['title'], row['movie_id']) for row in movies_ids_ratings]
+
+
+        # get median vote count
+        titles = [row['title'] for row in movies_ids_ratings]
+        unique_titles = set(titles)
+        vote_counts = []
+        for title in unique_titles:
+            vote_counts.append(titles.count(title))
+        median_votes = statistics.median(vote_counts)
+
+        # get chooser and averge rating for each movie
         unique_movie_and_ids = set(movies_and_ids)
         movie_chooser_rating = []
         for title, movie_id in unique_movie_and_ids:
@@ -747,14 +729,19 @@ class movieNightBot:
                     chooser_name = str(user_id['user_id'])
             ratings_for_movie = [row['rating'] for row in movies_ids_ratings if row['movie_id'] == movie_id]
             movie_average_rating = sum(ratings_for_movie)/len(ratings_for_movie)
-            movie_chooser_rating.append([title, chooser_name, movie_average_rating])
+            print(len(ratings_for_movie), median_votes, movie_average_rating)
+            if median_votes > 1:
+                weighted_score = math.log(len(ratings_for_movie), median_votes) * movie_average_rating
+            else:
+                weighted_score = "N/A"
+            movie_chooser_rating.append([title, chooser_name, movie_average_rating, weighted_score])
 
         movie_chooser_rating.sort(key=lambda x: float(x[2]), reverse=top)
         message = f"------ {'TOP' if top else 'BOTTOM'} RATED MOVIES ------\n"
         i = 1
-        for movie, chooser, rating in movie_chooser_rating[:n]:
+        for movie, chooser, rating, weighted_score in movie_chooser_rating[:n]:
             average = '{:02.1f}'.format(rating)
-            message += f"{i}. {movie} ({chooser}) - {average}\n"
+            message += f"{i}. {movie} ({chooser}) - {average} - [{weighted_score}]\n"
             i += 1
         return message
 
@@ -817,18 +804,3 @@ class movieNightBot:
             return True
         else:
             return False
-
-    async def bullshit(self):
-        c = self.conn.cursor()
-        c.execute('''SELECT id FROM movies''')
-        rows = c.fetchall()
-        movie_ids = [row['id'] for row in rows]
-        for movie_id in movie_ids:
-            c.execute('''SELECT rating FROM ratings WHERE movie_id = ?''',
-                      (movie_id,))
-            rows = c.fetchall()
-            if not rows:
-                c.execute('''UPDATE movies SET watched = ?, date_watched = ?
-                             WHERE id = ?''',
-                          (0, None, movie_id))
-        self.conn.commit()

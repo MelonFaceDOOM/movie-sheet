@@ -211,32 +211,29 @@ class Core(commands.Cog):
         return await ctx.send("```"+message+"```")
 
     @commands.command()
-    async def tag(self, ctx, movie, tag):
-        """Add a tag to a movie. Use quotations around movie and tag args."""
+    async def tag(self, ctx, movie, *tags):
+        """Add a tag to a movie."""
         guild_id = ctx.message.guild.id
         try:
-            await mnb.tag_movie(guild_id=guild_id, movie_title=movie, tag_text=tag)
+            await mnb.tag_movie(guild_id=guild_id, movie_title=movie, tags=tags)
         except ValueError as e:
             return await ctx.send(e)
-        return await ctx.send(f"You have tagged {movie} as {tag}.")
+        return await ctx.send(f"You have added the following tags to {movie}: {', '.join(tags)}.")
 
     @commands.command()
-    async def untag(self, ctx, movie, tag):
-        """Remove a tag from a movie. Use quotations around movie and tag args."""
+    async def untag(self, ctx, movie, *tags):
+        """Remove a tag from a movie."""
         guild_id = ctx.message.guild.id
         try:
-            await mnb.untag_movie(guild_id=guild_id, movie_title=movie, tag_text=tag)
+            await mnb.untag_movie(guild_id=guild_id, movie_title=movie, tags=tags)
         except ValueError as e:
             return await ctx.send(e)
-        return await ctx.send(f"You have untagged {tag} from {movie}.")
+        return await ctx.send(f"You have removed the following tags from {movie}: {', '.join(tags)}.")
 
     @commands.command()
     async def tagged(self, ctx, *tags):
-        """Find all movies with specified tags. If multiple tags, separate with commas."""
+        """Find all movies with specified tags."""
         guild_id = ctx.message.guild.id
-        tags = " ".join(tags)
-        tags = tags.split(",")
-        tags = [tag.strip() for tag in tags]
         try:
             message = await mnb.find_movies_with_tags(guild_id=guild_id, tags=tags)
         except ValueError as e:
@@ -253,6 +250,21 @@ class Core(commands.Cog):
         except ValueError as e:
             return await ctx.send(e)
         return await ctx.send("```"+message+"```")
+
+    @commands.command()
+    async def bullshit(self, ctx, name_or_mention, *movie):
+        if ctx.message.author.id != 117340965760532487:
+            return await ctx.send("only jacob can call bullshit")
+        else:
+            guild_id = ctx.message.guild.id
+            discord_id = await user_to_id(ctx, name_or_mention)
+            movie = " ".join(movie)
+            try:
+                await mnb.remove_rating(guild_id=guild_id, movie_title=movie,
+                                        rater_user_id=discord_id)
+            except ValueError as e:
+                return await ctx.send(e)
+            return await ctx.send("congratulations")
 
 
 class IndividualAnalytics(commands.Cog):
@@ -514,14 +526,6 @@ class Research(commands.Cog):
             messages = await chunk(message)
             for message in messages:
                 await ctx.send("```"+message+"```")
-
-    @commands.command()
-    async def bullshit(self, ctx):
-        if ctx.message.author.id != 117340965760532487:
-            return await ctx.send("only jacob can call bullshit")
-        else:
-            await mnb.bullshit()
-            return await ctx.send("congratulations")
 
 
 intents = Intents.default()
