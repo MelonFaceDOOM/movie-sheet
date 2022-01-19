@@ -8,4 +8,5 @@ config.py
 gapikey
 gcsekey
 *.db
+*.sql
 *.bkp

@@ -7,6 +7,8 @@ from make_melonbot_db import make_db
 from movienight_bot import movieNightBot
 from config import bot_token
 from melon_discord import user_to_id, id_to_user
+import datetime
+from tablefy import Tablefier
 
 db_filename = 'melonbot.db'
 make_db(db_filename)
@@ -22,16 +24,41 @@ async def chunk(message, max_length=1900):
             character = message[0]
             message = message[1:]
             chunk += character
-            
+
             if character == "\n":
                 newline_pos = len(chunk)
         if newline_pos and message:
             extra = chunk[newline_pos:]
             message = extra + message
-            chunk = chunk[:newline_pos-1]
-            
+            chunk = chunk[:newline_pos - 1]
+
         chunks.append(chunk)
     return chunks
+
+
+async def make_table(data):
+    tablefier = Tablefier(data=data, max_table_width=46)
+    tablefier.shrink_to_max_width()
+    table = tablefier.draw()
+    return table
+
+
+async def merge_title_and_table(title, table):
+    width = len(table.split('\n')[0])
+    output = ""
+    while title:
+        output += title[:width] + "\n"
+        title = title[width:]
+    output += "\n"
+    output += table
+    return output
+
+
+async def prepare_table_from_data(title, table):
+    table = await make_table(table)
+    message = await merge_title_and_table(title=title, table=table)
+    messages = await chunk(message)
+    return messages
 
 
 class Core(commands.Cog):
@@ -43,7 +70,7 @@ class Core(commands.Cog):
         """Returns the link for the OG google sheet"""
         url = "https://docs.google.com/spreadsheets/d/1RhQdngV4PshYQAOBYf9lT7MCmPk9ir1yHw9RL7Wn8PM/edit#gid=1230671661"
         await ctx.send(url)
-    
+
     @commands.command()
     async def add(self, ctx, *movie):
         """Suggest a future movie."""
@@ -56,7 +83,7 @@ class Core(commands.Cog):
         except ValueError as e:
             return await ctx.send(e)
         return await ctx.send(f"{movie} has been suggested")
-        
+
     @commands.command()
     async def remove(self, ctx, *movie):
         """Remove a suggested movie."""
@@ -67,7 +94,7 @@ class Core(commands.Cog):
         except ValueError as e:
             return await ctx.send(e)
         return await ctx.send(f"{movie} has been removed")
-            
+
     @commands.command()
     async def transfer(self, ctx, movie, name_or_mention):
         """Transfer choosership to a new person.
@@ -84,7 +111,7 @@ class Core(commands.Cog):
         except ValueError as e:
             return await ctx.send(e)
         return await ctx.send(f"{movie} was transferred to {recipient_name}")
-        
+
     @commands.command()
     async def find(self, ctx, *search_term):
         """Find a user or movie."""
@@ -95,7 +122,7 @@ class Core(commands.Cog):
                                          search_term=search_term)
         except ValueError as e:
             return await ctx.send(e)
-        return await ctx.send("```"+message+"```")
+        return await ctx.send("```" + message + "```")
 
     @commands.command()
     async def endorse(self, ctx, *movie):
@@ -109,7 +136,7 @@ class Core(commands.Cog):
         except ValueError as e:
             return await ctx.send(e)
         return await ctx.send(f"You've endorsed {movie}.")
-    
+
     @commands.command()
     async def unendorse(self, ctx, *movie):
         """Remove endorsement from a movie."""
@@ -122,7 +149,7 @@ class Core(commands.Cog):
         except ValueError as e:
             return await ctx.send(e)
         return await ctx.send(f"You've unendorsed {movie}.")
-        
+
     @commands.command()
     async def rate(self, ctx, *movie_and_rating):
         """Rate a movie."""
@@ -154,6 +181,19 @@ class Core(commands.Cog):
         return await ctx.send(f"You have removed your rating from {movie}.")
 
     @commands.command()
+    async def set_date(self, ctx, movie, date_watched):
+        guild_id = ctx.message.guild.id
+        try:
+            date_format_test = datetime.datetime.strptime(date_watched, '%Y-%m-%d')
+        except ValueError:
+            return await ctx.send(f"{date_watched} is the wrong format (example: '2021-10-10'). ")
+        try:
+            await mnb.set_date_watched(guild_id=guild_id, movie_title=movie, date_watched=date_watched)
+        except ValueError as e:
+            return await ctx.send(e)
+        return await ctx.send(f"you have set watch date of {movie} to {date_watched}")
+
+    @commands.command()
     async def review(self, ctx, movie, review):
         """Review a movie. Use quotations around movie and review args."""
         discord_id = ctx.message.author.id
@@ -181,7 +221,7 @@ class Core(commands.Cog):
                                              reviewer_user_id=discord_id)
         except ValueError as e:
             return await ctx.send(e)
-        return await ctx.send("```"+message+"```")
+        return await ctx.send("```" + message + "```")
 
     @commands.command()
     async def reviews_from(self, ctx, *name_or_mention):
@@ -196,7 +236,7 @@ class Core(commands.Cog):
                                              reviewer_user_id=discord_id)
         except ValueError as e:
             return await ctx.send(e)
-        return await ctx.send("```"+message+"```")
+        return await ctx.send("```" + message + "```")
 
     @commands.command()
     async def reviews_for(self, ctx, *movie):
@@ -208,7 +248,7 @@ class Core(commands.Cog):
                                              movie_title=movie)
         except ValueError as e:
             return await ctx.send(e)
-        return await ctx.send("```"+message+"```")
+        return await ctx.send("```" + message + "```")
 
     @commands.command()
     async def tag(self, ctx, movie, *tags):
@@ -238,7 +278,7 @@ class Core(commands.Cog):
             message = await mnb.find_movies_with_tags(guild_id=guild_id, tags=tags)
         except ValueError as e:
             return await ctx.send(e)
-        return await ctx.send("```"+message+"```")
+        return await ctx.send("```" + message + "```")
 
     @commands.command()
     async def tags(self, ctx, *movie):
@@ -249,7 +289,7 @@ class Core(commands.Cog):
             message = await mnb.find_movie_tags(guild_id=guild_id, movie_title=movie)
         except ValueError as e:
             return await ctx.send(e)
-        return await ctx.send("```"+message+"```")
+        return await ctx.send("```" + message + "```")
 
     @commands.command()
     async def bullshit(self, ctx, name_or_mention, *movie):
@@ -291,7 +331,7 @@ class IndividualAnalytics(commands.Cog):
         except ValueError as e:
             return await ctx.send(e)
         for message in messages:
-            await ctx.send("```"+message+"```")
+            await ctx.send("```" + message + "```")
 
     @commands.command()
     async def endorsements(self, ctx, *name_or_mention):
@@ -312,12 +352,12 @@ class IndividualAnalytics(commands.Cog):
                 return await ctx.send(f'User {name_or_mention} not found')
         try:
             messages = await chunk(await mnb.retrieve_endorsements(ctx=ctx, guild_id=guild_id,
-                                                                  endorser_user_id=discord_id, n=n))
+                                                                   endorser_user_id=discord_id, n=n))
         except ValueError as e:
             return await ctx.send(e)
         for message in messages:
-            await ctx.send("```"+message+"```")
-            
+            await ctx.send("```" + message + "```")
+
     @commands.command()
     async def chooser(self, ctx, *name_or_mention):
         """Return ratings received by a chooser."""
@@ -336,13 +376,14 @@ class IndividualAnalytics(commands.Cog):
             if not discord_id:
                 return await ctx.send(f'User {name_or_mention} not found')
         try:
-            messages = await chunk(await mnb.ratings_for_choosers_movies(ctx=ctx, guild_id=guild_id,
-                                                                         chooser_user_id=discord_id, n=n))
+            title, table = await mnb.ratings_for_choosers_movies(ctx=ctx, guild_id=guild_id,
+                                                                 chooser_user_id=discord_id, n=n)
+            messages = await prepare_table_from_data(title, table)
         except ValueError as e:
             return await ctx.send(e)
         for message in messages:
-            await ctx.send("```"+message+"```")
-        
+            await ctx.send("```" + message + "```")
+
     @commands.command()
     async def ratings(self, ctx, *name_or_mention):
         """Return ratings from a reviewer."""
@@ -361,13 +402,14 @@ class IndividualAnalytics(commands.Cog):
             if not discord_id:
                 return await ctx.send(f'User {name_or_mention} not found')
         try:
-            messages = await chunk(await mnb.ratings_from_reviewer(ctx=ctx, guild_id=guild_id,
-                                                                   rater_user_id=discord_id, n=n))
+            title, table = await mnb.ratings_from_rater(ctx=ctx, guild_id=guild_id,
+                                                        rater_user_id=discord_id, n=n)
+            messages = await prepare_table_from_data(title, table)
         except ValueError as e:
             return await ctx.send(e)
         for message in messages:
-            await ctx.send("```"+message+"```")
-    
+            await ctx.send("```" + message + "```")
+
     @commands.command()
     async def unrated(self, ctx, *name_or_mention):
         """Return unrated movies from a reviewer."""
@@ -391,7 +433,7 @@ class IndividualAnalytics(commands.Cog):
         except ValueError as e:
             return await ctx.send(e)
         for message in messages:
-            await ctx.send("```"+message+"```")
+            await ctx.send("```" + message + "```")
 
 
 class GroupAnalytics(commands.Cog):
@@ -404,8 +446,8 @@ class GroupAnalytics(commands.Cog):
         except ValueError as e:
             return await ctx.send(e)
         for message in messages:
-            await ctx.send("```"+message+"```")
-    
+            await ctx.send("```" + message + "```")
+
     @commands.command()
     async def unendorsed(self, ctx, *name_or_mention):
         """Return unendorsed movies."""
@@ -423,7 +465,7 @@ class GroupAnalytics(commands.Cog):
         except ValueError as e:
             return await ctx.send(e)
         for message in messages:
-            await ctx.send("```"+message+"```")
+            await ctx.send("```" + message + "```")
 
     @commands.command()
     async def recent(self, ctx, n=10):
@@ -441,28 +483,32 @@ class GroupAnalytics(commands.Cog):
         """Return rankings of chooser scores."""
         guild_id = ctx.message.guild.id
         try:
-            message = await mnb.standings(ctx=ctx, guild_id=guild_id)
+            title, table = await mnb.standings(ctx=ctx, guild_id=guild_id)
+            messages = await prepare_table_from_data(title, table)
         except ValueError as e:
             return await ctx.send(e)
-        return await ctx.send("```"+message+"```")
-        
+        for message in messages:
+            await ctx.send("```" + message + "```")
+
     @commands.command()
     async def top(self, ctx, n=10):
         """Return the top-rated movies."""
         guild_id = ctx.message.guild.id
         try:
-            messages = await chunk(await mnb.top_ratings(ctx=ctx, guild_id=guild_id, top=True, n=n))
+            title, table = await mnb.top_ratings(ctx=ctx, guild_id=guild_id, top=True, n=n)
+            messages = await prepare_table_from_data(title, table)
         except ValueError as e:
             return await ctx.send(e)
         for message in messages:
-            await ctx.send("```"+message+"```")
+            await ctx.send("```" + message + "```")
 
     @commands.command()
     async def bottom(self, ctx, n=10):
         """Return the bottom-rated movies."""
         guild_id = ctx.message.guild.id
         try:
-            messages = await chunk(await mnb.top_ratings(ctx=ctx, guild_id=guild_id, top=False, n=n))
+            title, table = await mnb.top_ratings(ctx=ctx, guild_id=guild_id, top=False, n=n)
+            messages = await prepare_table_from_data(title, table)
         except ValueError as e:
             return await ctx.send(e)
         for message in messages:
@@ -475,7 +521,7 @@ class Research(commands.Cog):
         """Return a random suggested movie."""
         guild_id = ctx.message.guild.id
         movie = await mnb.pick_random_movie(guild_id=guild_id)
-        return await ctx.send("```"+movie+"```")
+        return await ctx.send("```" + movie + "```")
 
     @commands.command()
     async def ebert(self, ctx, *movie):
@@ -483,24 +529,24 @@ class Research(commands.Cog):
         movie = " ".join(movie)
         messages = await chunk(ebert_lookup(movie))
         for message in messages:
-            await ctx.send("```"+message+"```")
- 
+            await ctx.send("```" + message + "```")
+
     @commands.command()
     async def fresh(self, ctx, *movie):
         """Return a random fresh RT review for a movie."""
         movie = " ".join(movie)
         messages = await chunk(random_tomato(movie, fresh=1))
         for message in messages:
-            await ctx.send("```"+message+"```")
-        
+            await ctx.send("```" + message + "```")
+
     @commands.command()
     async def rotten(self, ctx, *movie):
         """Return a random rotten RT review for a movie."""
         movie = " ".join(movie)
         messages = await chunk(random_tomato(movie, fresh=0))
         for message in messages:
-            return await ctx.send("```"+message+"```")
-            
+            return await ctx.send("```" + message + "```")
+
     @commands.command()
     async def gamespot(self, ctx, *directory):
         """Return a random rotten GS post."""
@@ -525,12 +571,12 @@ class Research(commands.Cog):
             message = author + " - " + time + "\n" + post + "\n\n" + "read more:\n" + post_link
             messages = await chunk(message)
             for message in messages:
-                await ctx.send("```"+message+"```")
+                await ctx.send("```" + message + "```")
 
 
 intents = Intents.default()
 intents.members = True
-bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"),
+bot = commands.Bot(command_prefix=commands.when_mentioned_or("?"),
                    case_insensitive=True,
                    intents=intents,
                    description='ur fav movienight companion.\n!register <nick> to get started!!!')
@@ -540,6 +586,7 @@ bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"),
 async def on_ready():
     print('Logged in as {0} ({0.id})'.format(bot.user))
     print('------')
+
 
 bot.add_cog(Core(bot))
 bot.add_cog(IndividualAnalytics(bot))
