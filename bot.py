@@ -37,7 +37,7 @@ async def chunk(message, max_length=1900):
 
 
 async def make_table(data):
-    tablefier = Tablefier(data=data, max_table_width=46)
+    tablefier = Tablefier(data=data, max_table_width=37)
     tablefier.shrink_to_max_width()
     table = tablefier.draw()
     return table
@@ -298,6 +298,8 @@ class Core(commands.Cog):
         else:
             guild_id = ctx.message.guild.id
             discord_id = await user_to_id(ctx, name_or_mention)
+            if not discord_id and name_or_mention.isnumeric():
+                discord_id = int(name_or_mention)
             movie = " ".join(movie)
             try:
                 await mnb.remove_rating(guild_id=guild_id, movie_title=movie,
@@ -438,6 +440,13 @@ class IndividualAnalytics(commands.Cog):
 
 class GroupAnalytics(commands.Cog):
     @commands.command()
+    async def seen(self, ctx, *directory):
+        """Total movies rated in this server."""
+        guild_id = ctx.message.guild.id
+        message = await mnb.seen(guild_id=guild_id)
+        return await ctx.send(message)
+
+    @commands.command()
     async def top_endorsed(self, ctx, n=5):
         """Return most-endorsed movies."""
         guild_id = ctx.message.guild.id
@@ -514,6 +523,18 @@ class GroupAnalytics(commands.Cog):
         for message in messages:
             await ctx.send("```" + message + "```")
 
+    @commands.command()
+    async def attendance(self, ctx, n=10):
+        """Movies ranked by attendance."""
+        guild_id = ctx.message.guild.id
+        try:
+            title, table = await mnb.top_attendance(ctx=ctx, guild_id=guild_id, n=n)
+            messages = await prepare_table_from_data(title, table)
+        except ValueError as e:
+            return await ctx.send(e)
+        for message in messages:
+            await ctx.send("```" + message + "```")
+
 
 class Research(commands.Cog):
     @commands.command()
@@ -574,9 +595,10 @@ class Research(commands.Cog):
                 await ctx.send("```" + message + "```")
 
 
+
 intents = Intents.default()
 intents.members = True
-bot = commands.Bot(command_prefix=commands.when_mentioned_or("?"),
+bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"),
                    case_insensitive=True,
                    intents=intents,
                    description='ur fav movienight companion.\n!register <nick> to get started!!!')

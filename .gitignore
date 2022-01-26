@@ -10,3 +10,4 @@ gcsekey
 *.db
 *.sql
 *.bkp
+/.idea
