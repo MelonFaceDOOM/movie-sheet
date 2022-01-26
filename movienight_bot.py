@@ -785,7 +785,7 @@ class movieNightBot:
             count = len(ratings_for_movie)
             movie_chooser_rating_count.append([movie['title'], chooser_name, movie['date_watched'], count])
 
-        movie_chooser_rating_count.sort(key=lambda x: float(x[3]))
+        movie_chooser_rating_count.sort(key=lambda x: float(x[3]), reverse=True)
         title = f"BIGGEST MOVIE NIGHTS"
         table = [["Title", "Chooser", "Date Watched", "Attendees"]]
         for title, chooser_name, date_watched, count in movie_chooser_rating_count[:n]:

@@ -8,7 +8,7 @@ git push origin master
 ssh root@68.183.52.128
 cd movie-sheet
 ps -ef
-find id of python bot.py
+find id (left number) of python bot.py
 kill id
 git pull origin master
 source venv/bin/activate
