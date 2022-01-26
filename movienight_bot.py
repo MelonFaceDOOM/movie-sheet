@@ -856,7 +856,7 @@ class movieNightBot:
 
     async def seen(self, guild_id):
         c = self.conn.cursor()
-        c.execute('''SELECT COUNT(*) FROM movies WHERE guild_id = ? ''', (guild_id,))
+        c.execute('''SELECT COUNT(*) FROM movies WHERE guild_id = ? AND watched = ?''', (guild_id, 1))
         movie_count = c.fetchone()['COUNT(*)']
         message = f"{movie_count} movies have been seen!"
         return message
