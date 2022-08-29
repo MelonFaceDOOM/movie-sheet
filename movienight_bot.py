@@ -30,7 +30,8 @@ class movieNightBot:
             if existing_movie['watched'] == 1:
                 raise ValueError(f'The movie {movie_title} has already been watched.')
             elif existing_movie['watched'] == 0:
-                raise ValueError(f'The movie {movie_title} has already been suggested.')
+                await self.endorse_suggestion(guild_id, movie_title, user_id)
+                raise ValueError(f"The movie {movie_title} has already been suggested, but now you've endorsed it!")
         c = self.conn.cursor()
         c.execute('''INSERT INTO movies (guild_id, title, user_id, watched) values (?,?,?,?)''',
                   (guild_id, movie_title, user_id, 0))
@@ -661,7 +662,7 @@ class movieNightBot:
             date_watched = movie['date_watched']
             if not date_watched:
                 date_watched = "????-??-??"
-            table.append([movie["title"], date_watched[:10], f'{weighted_score:.1f}', f'{average:.1f}'])
+            table.append([movie["title"], date_watched[:10], f'{average:.1f}'])
         return title, table
 
     async def ratings_from_rater(self, ctx, guild_id, rater_user_id, n=10):
@@ -709,30 +710,34 @@ class movieNightBot:
 
     async def standings(self, ctx, guild_id):
         c = self.conn.cursor()
-        c.execute('''SELECT movies.user_id, ratings.rating FROM ratings
+        c.execute('''SELECT movies.user_id, movies.title, ratings.rating FROM ratings
                      INNER JOIN movies ON ratings.movie_id = movies.id
                      WHERE movies.guild_id = ? AND movies.watched = ?''',
                   (guild_id, 1))
-        choosers_ratings = c.fetchall()
-        choosers_ratings.sort(key=lambda x: str(x['user_id']))
+        choosers_movies_ratings = c.fetchall()
+        choosers_movies_ratings.sort(key=lambda x: str(x['user_id']))
         choosers_averagerating_moviecount = []
         ratings_for_current_chooser = []
-        for cr in choosers_ratings:
+        for cmr in choosers_movies_ratings:
             if len(ratings_for_current_chooser) == 0:
-                current_chooser = cr['user_id']
-                ratings_for_current_chooser = [cr['rating']]
-            elif cr['user_id'] == current_chooser:
-                ratings_for_current_chooser.append(cr['rating'])
+                current_chooser = cmr['user_id']
+                ratings_for_current_chooser = [cmr['rating']]
+                titles = [cmr['title']]
+            elif cmr['user_id'] == current_chooser:
+                ratings_for_current_chooser.append(cmr['rating'])
+                titles.append(cmr['title'])
             else:
                 average_rating = sum(ratings_for_current_chooser) / len(ratings_for_current_chooser)
-                choosers_averagerating_moviecount.append([current_chooser, average_rating, len(ratings_for_current_chooser)])
-                current_chooser = cr['user_id']
-                ratings_for_current_chooser = [cr['rating']]
+                movie_count = len(set(titles))
+                choosers_averagerating_moviecount.append([current_chooser, average_rating, movie_count])
+                current_chooser = cmr['user_id']
+                ratings_for_current_chooser = [cmr['rating']]
         average_rating = sum(ratings_for_current_chooser) / len(ratings_for_current_chooser)
-        choosers_averagerating_moviecount.append([current_chooser, average_rating, len(ratings_for_current_chooser)])
+        movie_count = len(set(titles))
+        choosers_averagerating_moviecount.append([current_chooser, average_rating, movie_count])
         choosers_averagerating_moviecount.sort(key=lambda x: float(x[1]), reverse=True)
         title = f"OVERALL STANDINGS"
-        table = [["Chooser", "Submissions Watched", "AVG"]]
+        table = [["Chooser", "Submissions Watched", "avg"]]
         for chooser, average_rating, movie_count in choosers_averagerating_moviecount:
             if movie_count > 0:
                 chooser_name = await id_to_user(ctx, chooser)
