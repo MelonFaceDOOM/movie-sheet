@@ -732,6 +732,7 @@ class movieNightBot:
                 choosers_averagerating_moviecount.append([current_chooser, average_rating, movie_count])
                 current_chooser = cmr['user_id']
                 ratings_for_current_chooser = [cmr['rating']]
+                titles = [cmr['title']]
         average_rating = sum(ratings_for_current_chooser) / len(ratings_for_current_chooser)
         movie_count = len(set(titles))
         choosers_averagerating_moviecount.append([current_chooser, average_rating, movie_count])
